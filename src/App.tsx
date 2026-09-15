@@ -30,8 +30,7 @@ import { recommendFor } from "./lib/recommendation";
 import { LEAD_ACTION_META } from "./lib/leadActions";
 import { LeadsAreaTabs } from "./components/needs-attention/LeadsAreaTabs";
 import { LoginPage } from "./pages/LoginPage";
-import { type AppView, type FilterPreset } from "./components/app-sidebar-4";
-import AppSidebar1 from "./components/app-sidebar-1";
+import AppSidebar4, { type AppView, type FilterPreset } from "./components/app-sidebar-4";
 import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
 import { REPS } from "./data/reps";
@@ -43,6 +42,7 @@ import { SEED_NOTIFICATIONS } from "./data/notifications";
 import { INITIAL_NOTIFICATION_PREFS } from "./data/notificationPrefs";
 import { INITIAL_ASSIGNMENT_RULES } from "./data/assignmentRules";
 import { INITIAL_SCORING_RULES, INITIAL_TIER_THRESHOLDS } from "./data/scoringRules";
+import { landingViewForRole } from "./lib/roleLanding";
 import { INITIAL_CONNECTIONS } from "./data/connections";
 import { assignByRules, summarizeConditions, summarizeTarget } from "./lib/ruleEngine";
 import type { SuggestedActionKey } from "./components/lead-detail/SuggestedAction";
@@ -183,16 +183,16 @@ export function App() {
     return email.toLowerCase().endsWith("@tantira.co") && ssoConfig.enabled;
   }
 
-  function handleLogin(_email: string) {
+  function handleLogin(email: string) {
     setAuthenticated(true);
-    setView("needs-attention");
+    const member = members.find((m) => m.email.toLowerCase() === email.trim().toLowerCase());
+    setView(landingViewForRole(member?.role));
   }
 
   function handleLogout() {
     setAuthenticated(false);
     setSelectedLeadId(null);
   }
-  void handleLogout; // app-sidebar-1 preview has no logout hook — wire back up if it replaces app-sidebar-4 for real
 
   function runWriteback(leadId: string) {
     setTimeout(() => {
@@ -821,7 +821,12 @@ export function App() {
   return (
     <div className="app-shell app-shell--sidebar">
       <div className="app-sidebar">
-        <AppSidebar1 />
+        <AppSidebar4
+          activeView={view}
+          activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
+          onNavigate={navigateTo}
+          onLogout={handleLogout}
+        />
       </div>
 
       <div className="app-content">
@@ -835,6 +840,7 @@ export function App() {
       {view === "dashboard" && (
         <main className="app-main">
           <PageHeader
+            section="Operate"
             title="All Leads"
             description="Every lead in the pipeline. Filter, open, and assign."
             tabs={<LeadsAreaTabs current="dashboard" onChange={navigateTo} />}
@@ -1075,6 +1081,7 @@ export function App() {
             lead={selectedLead}
             leads={leads}
             assigneeOptions={ASSIGNEES}
+            scoringRules={scoringRules}
             conflict={selectedLeadConflict}
             onClose={() => setSelectedLeadId(null)}
             onAssign={handleAssign}
@@ -1095,6 +1102,7 @@ export function App() {
           lead={selectedLead}
           leads={leads}
           assigneeOptions={ASSIGNEES}
+          scoringRules={scoringRules}
           conflict={selectedLeadConflict}
           onClose={() => setSelectedLeadId(null)}
           onAssign={handleAssign}

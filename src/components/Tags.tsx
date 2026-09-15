@@ -1,10 +1,10 @@
 import { Tag } from "@blueprintjs/core";
 import type { Priority, LeadStatus } from "../types";
 
-const PRIORITY_COLOR: Record<Priority, string> = {
-  Hot: "#CD4246",
-  Warm: "#C87619",
-  Cold: "#5F6B7C",
+const PRIORITY_COLOR: Record<Priority, { bg: string; text: string }> = {
+  Hot: { bg: "#FDEBEC", text: "#B3262C" },
+  Warm: { bg: "#FDF1E3", text: "#A85D12" },
+  Cold: { bg: "#EDEFF2", text: "#5F6B7C" },
 };
 
 const PRIORITY_ICON: Record<Priority, "flame" | undefined> = {
@@ -14,24 +14,26 @@ const PRIORITY_ICON: Record<Priority, "flame" | undefined> = {
 };
 
 export function PriorityTag({ priority }: { priority: Priority }) {
+  const { bg, text } = PRIORITY_COLOR[priority];
   return (
-    <Tag round icon={PRIORITY_ICON[priority]} style={{ background: PRIORITY_COLOR[priority], color: "#fff" }}>
+    <Tag round icon={PRIORITY_ICON[priority]} style={{ background: bg, color: text }}>
       {priority}
     </Tag>
   );
 }
 
-const STATUS_COLOR: Record<LeadStatus, string> = {
-  New: "#2D72D2",
-  Contacted: "#C87619",
-  Qualified: "#238551",
-  Assigned: "#238551",
-  Lost: "#CD4246",
+const STATUS_COLOR: Record<LeadStatus, { bg: string; text: string }> = {
+  New: { bg: "#EBF1FE", text: "#215DB0" },
+  Contacted: { bg: "#FDF1E3", text: "#A85D12" },
+  Qualified: { bg: "#E7F7EF", text: "#1C6E42" },
+  Assigned: { bg: "#E7F7EF", text: "#1C6E42" },
+  Lost: { bg: "#FDEBEC", text: "#B3262C" },
 };
 
 export function StatusTag({ status }: { status: LeadStatus }) {
+  const { bg, text } = STATUS_COLOR[status];
   return (
-    <Tag minimal style={{ color: STATUS_COLOR[status], border: `1px solid ${STATUS_COLOR[status]}` }}>
+    <Tag round style={{ background: bg, color: text }}>
       {status}
     </Tag>
   );

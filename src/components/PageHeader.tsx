@@ -1,17 +1,19 @@
 import type { ReactNode } from "react";
 
 interface PageHeaderProps {
+  section?: string;
   title: string;
   description?: string;
   actions?: ReactNode;
   tabs?: ReactNode;
 }
 
-export function PageHeader({ title, description, actions, tabs }: PageHeaderProps) {
+export function PageHeader({ section, title, description, actions, tabs }: PageHeaderProps) {
   return (
     <div className="page-header">
       <div className="page-header__row">
         <div className="page-header__text">
+          {section && <div className="page-header__section">{section}</div>}
           <h2 className="page-header__title">{title}</h2>
           {description && <p className="page-header__description">{description}</p>}
         </div>

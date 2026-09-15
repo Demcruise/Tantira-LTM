@@ -1,6 +1,6 @@
 import { Button, Card, H4, Icon } from "@blueprintjs/core";
 import type { Lead } from "../../types";
-import type { AppView } from "../app-sidebar-4";
+import type { AppView, FilterPreset } from "../app-sidebar-4";
 import { buildFunnelStages, withDropOff } from "../../lib/pipeline";
 
 function dropOffColor(pct: number): string {
@@ -13,6 +13,7 @@ interface StageCta {
   reason: string;
   label?: string;
   view?: AppView;
+  filterPreset?: FilterPreset;
 }
 
 interface LiveCounts {
@@ -32,7 +33,8 @@ function stageCta(key: string, dropped: number, live: LiveCounts): StageCta | nu
       return {
         reason: `${live.unassignedOpen} open lead${live.unassignedOpen === 1 ? "" : "s"} still waiting for an owner${lostNote}.`,
         label: "Assign now",
-        view: "assignment",
+        view: "dashboard",
+        filterPreset: { status: "Open", assignee: "Unassigned" },
       };
     }
     case "synced":
@@ -49,7 +51,7 @@ function stageCta(key: string, dropped: number, live: LiveCounts): StageCta | nu
 
 interface FunnelChartProps {
   leads: Lead[];
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
 }
 
 export function FunnelChart({ leads, onNavigate }: FunnelChartProps) {
@@ -102,7 +104,14 @@ export function FunnelChart({ leads, onNavigate }: FunnelChartProps) {
                     <div className="funnel-chart__cta">
                       <span className="funnel-chart__cta-reason">{cta.reason}</span>
                       {cta.label && cta.view && (
-                        <Button small minimal intent="primary" rightIcon="arrow-right" text={cta.label} onClick={() => onNavigate(cta.view!)} />
+                        <Button
+                          small
+                          minimal
+                          intent="primary"
+                          rightIcon="arrow-right"
+                          text={cta.label}
+                          onClick={() => onNavigate(cta.view!, cta.filterPreset)}
+                        />
                       )}
                     </div>
                   )}

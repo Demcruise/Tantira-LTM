@@ -80,6 +80,7 @@ export function SsoPage({ config, onSelectProvider, onSaveMetadata, onSaveAttrib
   return (
     <div className="settings-page">
       <PageHeader
+        section="Govern"
         title="Single Sign-On"
         description="Route every login through your identity provider. Configure, test, then enable for the organization."
         actions={

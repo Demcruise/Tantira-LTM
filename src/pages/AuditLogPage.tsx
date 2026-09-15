@@ -66,6 +66,7 @@ export function AuditLogPage({ entries, initialSearch }: { entries: AuditLogEntr
   return (
     <div className="audit-log-page">
       <PageHeader
+        section="Govern"
         title="Audit Log"
         description="Every human-initiated change in this workspace, with before/after values."
         actions={<Button icon="export" text="Export CSV" onClick={handleExport} />}
@@ -103,7 +104,7 @@ export function AuditLogPage({ entries, initialSearch }: { entries: AuditLogEntr
         </HTMLSelect>
       </div>
 
-      <HTMLTable className="audit-log-page__table" interactive striped>
+      <HTMLTable className="audit-log-page__table" interactive>
         <thead>
           <tr>
             <th>Time</th>

@@ -76,6 +76,7 @@ export function MyLeadsPage({ leads, reps, viewingAs, onChangeViewingAs, onOpenL
   return (
     <div className="my-leads-page">
       <PageHeader
+        section="Operate"
         title="My Leads"
         description="Your queue, ordered by what needs a response first. Each card says why the lead matters and what to do next; open it for the full context."
         actions={

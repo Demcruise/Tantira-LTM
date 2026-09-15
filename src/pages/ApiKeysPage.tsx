@@ -36,13 +36,14 @@ export function ApiKeysPage({ keys, onGenerate, onRevoke }: ApiKeysPageProps) {
   return (
     <div className="api-keys-page">
       <PageHeader
+        section="Connect"
         title="API Keys"
         description="Keys integrations use to write into Tantira. Revoke anything you don't recognize."
         actions={<Button intent="primary" icon="add" text="Generate new key" onClick={() => setGenerateOpen(true)} />}
       />
 
       <Card className="page-card">
-      <HTMLTable className="api-keys-page__table" striped>
+      <HTMLTable className="api-keys-page__table">
         <thead>
           <tr>
             <th>Name</th>

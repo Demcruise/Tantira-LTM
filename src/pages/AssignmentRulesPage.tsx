@@ -83,6 +83,7 @@ export function AssignmentRulesPage({ rules, leads, onAutoAssign, onReorder, onS
   return (
     <div className="assignment-rules-page">
       <PageHeader
+        section="Optimize"
         title="Assignment Rules"
         description="Ordered rules that decide who gets each lead. First match wins; the catch-all takes the rest. New leads are assigned automatically on capture; use “Apply to unassigned” to run the chain over leads already waiting in the pool."
         actions={

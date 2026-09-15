@@ -62,6 +62,7 @@ export function AutoProcessedLogPage({ entries, onSelectLead, onChangeView, init
   return (
     <div className="auto-processed-log-page">
       <PageHeader
+        section="Operate"
         title="Auto-Processed Log"
         description="What the automation did on its own — no human action here."
         tabs={<LeadsAreaTabs current="auto-processed-log" onChange={onChangeView} />}
@@ -93,7 +94,7 @@ export function AutoProcessedLogPage({ entries, onSelectLead, onChangeView, init
         </HTMLSelect>
       </div>
 
-      <HTMLTable className="audit-log-page__table" interactive striped>
+      <HTMLTable className="audit-log-page__table" interactive>
         <thead>
           <tr>
             <th>Time</th>

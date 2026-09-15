@@ -123,6 +123,7 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
   return (
     <div className="intake-page">
       <PageHeader
+        section="Operate"
         title="Inbound Sources"
         description="Where leads come from and how well the extractor turns raw messages into leads. Anything it cannot resolve on its own — an ambiguous person, a missing company, a likely duplicate — waits below for a decision, then enters the pipeline like any other lead."
       />

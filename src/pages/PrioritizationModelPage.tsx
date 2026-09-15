@@ -46,6 +46,7 @@ export function PrioritizationModelPage({
   return (
     <div className="prioritization-page-wrap">
       <PageHeader
+        section="Optimize"
         title="Prioritization Model"
         description="Scoring rules and tier thresholds that turn a lead's signals into Hot, Warm, or Cold — and the feedback from outcomes and owner overrides that tells you whether the model is right."
         actions={<Button intent="primary" icon="add" text="Add scoring rule" onClick={onAddRule} />}

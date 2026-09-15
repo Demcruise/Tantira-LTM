@@ -1,5 +1,5 @@
 import { Button, Drawer, Icon, Tag } from "@blueprintjs/core";
-import type { ConflictResolution, Lead, LeadActionType, Outcome, OverrideReason, SyncConflict } from "../types";
+import type { ConflictResolution, Lead, LeadActionType, Outcome, OverrideReason, ScoringRule, SyncConflict } from "../types";
 import { getRepLoad } from "../lib/capacity";
 import { priorityConfidence } from "../lib/scoring";
 import { isSnoozed } from "../lib/leadActions";
@@ -24,6 +24,7 @@ interface LeadDetailPanelProps {
   lead: Lead | null;
   leads: Lead[];
   assigneeOptions: string[];
+  scoringRules: ScoringRule[];
   conflict: LeadConflict | null;
   onClose: () => void;
   onAssign: (leadId: string, assignee: string) => void;
@@ -45,6 +46,7 @@ export function LeadDetailPanel({
   lead,
   leads,
   assigneeOptions,
+  scoringRules,
   conflict,
   onClose,
   onAssign,
@@ -127,7 +129,7 @@ export function LeadDetailPanel({
       </SectionAccordion>
 
       <SectionAccordion flagged={prioritizationFlagged} title="Prioritization" summary={prioritizationSummary}>
-        <PrioritizationSection lead={lead} confidence={confidence} />
+        <PrioritizationSection lead={lead} confidence={confidence} rules={scoringRules} />
       </SectionAccordion>
 
       <SectionAccordion flagged={assignmentFlagged} title="Assignment" summary={assignmentSummary}>

@@ -11,10 +11,10 @@ interface NotificationPreferencesPageProps {
 export function NotificationPreferencesPage({ matrix, onToggle }: NotificationPreferencesPageProps) {
   return (
     <div className="notif-prefs-page">
-      <PageHeader title="Notification Preferences" description="Choose how you want to hear about each type of event. Changes save automatically." />
+      <PageHeader section="Govern" title="Notification Preferences" description="Choose how you want to hear about each type of event. Changes save automatically." />
 
       <Card className="page-card">
-      <HTMLTable className="notif-prefs-page__table" striped>
+      <HTMLTable className="notif-prefs-page__table">
         <thead>
           <tr>
             <th>Event</th>

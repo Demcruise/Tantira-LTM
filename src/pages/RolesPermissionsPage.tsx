@@ -33,6 +33,7 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
   return (
     <div className="roles-page">
       <PageHeader
+        section="Govern"
         title="Roles & Permissions"
         description="What each role can see and do. Changes apply to members immediately."
         actions={<Button intent="primary" icon="add" text="Create custom role" onClick={() => setCreateOpen(true)} />}
@@ -40,7 +41,7 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
 
       <Card className="page-card">
       <div className="roles-page__table-wrap">
-        <HTMLTable className="roles-page__table" striped>
+        <HTMLTable className="roles-page__table">
           <thead>
             <tr>
               <th className="roles-page__perm-col">Permission</th>

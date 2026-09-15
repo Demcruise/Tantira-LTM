@@ -100,6 +100,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   return (
     <div className="workflow-page">
       <PageHeader
+        section="Automate"
         title="Lead Triage Workflow"
         description="Runs on every captured lead: Enrich → Prioritize → Route & Assign → Notify → Write back to CRM. Edit the draft, test it against a real lead, validate, then publish a new version — the live version keeps running untouched until you do."
       />

@@ -35,6 +35,7 @@ export function NeedsAttentionPage({ leads, processedThisWeek, intakeUnresolved,
   return (
     <div className="needs-attention-page">
       <PageHeader
+        section="Operate"
         title="Attention Center"
         description={`${queue.length} item${queue.length === 1 ? "" : "s"} need a human decision · ${processedThisWeek} handled automatically this week. Everything the automation could not finish on its own lands here, in severity order.`}
         tabs={<LeadsAreaTabs current="needs-attention" onChange={onChangeView} />}

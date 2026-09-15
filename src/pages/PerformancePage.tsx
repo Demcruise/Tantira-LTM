@@ -38,6 +38,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
   return (
     <div className="perf">
       <PageHeader
+        section="Optimize"
         title="Performance"
         description="Is the whole system improving sales outcomes? Volume in, speed of response, SLA discipline, who is converting, and whether routing and prioritization are earning their keep. Each panel links to the control that changes it."
       />

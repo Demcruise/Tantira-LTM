@@ -1,5 +1,5 @@
 import type { Lead } from "../types";
-import type { AppView } from "../components/app-sidebar-4";
+import type { AppView, FilterPreset } from "../components/app-sidebar-4";
 import { FunnelChart } from "../components/pipeline/FunnelChart";
 import { AccuracyTrendChart } from "../components/pipeline/AccuracyTrendChart";
 import { PageHeader } from "../components/PageHeader";
@@ -7,7 +7,7 @@ import { KpiCard } from "../components/KpiRow";
 
 interface PipelineHealthPageProps {
   leads: Lead[];
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
 }
 
 export function PipelineHealthPage({ leads, onNavigate }: PipelineHealthPageProps) {
@@ -20,6 +20,7 @@ export function PipelineHealthPage({ leads, onNavigate }: PipelineHealthPageProp
   return (
     <div className="pipeline-page">
       <PageHeader
+        section="Automate"
         title="Pipeline Health"
         description="The health check for the whole triage flow: where leads stall between capture and CRM sync, and whether the prioritization model is predicting wins. Every drop-off links to the page that fixes it."
       />

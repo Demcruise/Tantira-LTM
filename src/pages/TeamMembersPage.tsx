@@ -22,13 +22,14 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
   return (
     <div className="team-page">
       <PageHeader
+        section="Govern"
         title="Team Members"
         description="Who has access to this workspace and what role they hold."
         actions={<Button intent="primary" icon="add" text="Invite member" onClick={() => setInviteOpen(true)} />}
       />
 
       <Card className="page-card">
-      <HTMLTable className="team-page__table" striped>
+      <HTMLTable className="team-page__table">
         <thead>
           <tr>
             <th>Name</th>

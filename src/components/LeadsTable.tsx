@@ -48,7 +48,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
   const allChecked = checkedVisible === visibleIds.length;
 
   return (
-    <HTMLTable interactive striped className="leads-table">
+    <HTMLTable interactive className="leads-table">
       <thead>
         <tr>
           <th className="leads-table__check">

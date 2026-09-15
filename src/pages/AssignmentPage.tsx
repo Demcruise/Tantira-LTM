@@ -19,6 +19,7 @@ export function AssignmentPage({ leads, assigneeOptions, onOpenLead, onAssign, o
   return (
     <div className="assignment-page">
       <PageHeader
+        section="Optimize"
         title="Assignment & SLA"
         description="Rep load against capacity, and every lead approaching or past its response window. Assign from the pool here; the rules that drive auto-assignment live under Automation → Assignment Rules."
       />
