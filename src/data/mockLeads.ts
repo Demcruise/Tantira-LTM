@@ -77,6 +77,7 @@ export const mockLeads: Lead[] = names.map(([name, company], i) => {
     createdAt: hoursAgo((i * 3 + 1) % 30),
     lastActivity: hoursAgo((i * 2) % 12),
     snoozedUntil: null,
+    followUpDueAt: null,
     actions: [],
     decision: null,
   };

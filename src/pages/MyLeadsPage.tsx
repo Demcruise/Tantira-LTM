@@ -11,6 +11,14 @@ import { SlaBadge } from "../components/SlaBadge";
 const PRIORITY_ORDER: Record<Priority, number> = { Hot: 0, Warm: 1, Cold: 2 };
 const RISK_ORDER = { overdue: 0, atRisk: 1, onTrack: 2 } as const;
 
+function followUpLabel(dueAt: string): { text: string; overdue: boolean } {
+  const diffHours = (new Date(dueAt).getTime() - Date.now()) / (1000 * 60 * 60);
+  if (diffHours < 0) return { text: `Follow-up overdue`, overdue: true };
+  if (diffHours < 24) return { text: `Follow-up today`, overdue: false };
+  if (diffHours < 48) return { text: `Follow-up tomorrow`, overdue: false };
+  return { text: `Follow-up in ${Math.round(diffHours / 24)}d`, overdue: false };
+}
+
 interface MyLeadsPageProps {
   leads: Lead[];
   reps: string[];
@@ -43,6 +51,15 @@ function LeadWorkCard({ lead, onOpen, onAction }: { lead: Lead; onOpen: () => vo
               Nurture
             </Tag>
           )}
+          {lead.followUpDueAt &&
+            (() => {
+              const fu = followUpLabel(lead.followUpDueAt);
+              return (
+                <Tag minimal round icon="calendar" intent={fu.overdue ? "danger" : "primary"}>
+                  {fu.text}
+                </Tag>
+              );
+            })()}
         </div>
         <div className="work-card__reasons">
           <span className="work-card__reasons-label">Why this matters</span>

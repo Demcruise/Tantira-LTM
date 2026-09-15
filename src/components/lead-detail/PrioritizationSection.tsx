@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Icon, Tooltip } from "@blueprintjs/core";
 import type { Lead, ScoringRule } from "../../types";
 import { PriorityTag } from "../Tags";
+import { ConfidenceMeter } from "../ConfidenceMeter";
 import { explainScore } from "../../lib/scoreExplanation";
 import { tierForScore } from "../../lib/scoringSimulation";
 import { DEFAULT_THRESHOLDS } from "../../lib/scoring";
@@ -23,7 +24,7 @@ export function PrioritizationSection({ lead, confidence, rules }: { lead: Lead;
           </span>
         </Tooltip>
       </div>
-      <div className="prioritization-section__confidence">{confidence}% confidence in this tier</div>
+      <ConfidenceMeter value={confidence} label="confidence in this tier" />
 
       <button type="button" className="prioritization-section__why-toggle" onClick={() => setOpen(!open)}>
         <Icon icon={open ? "chevron-up" : "chevron-down"} size={11} />

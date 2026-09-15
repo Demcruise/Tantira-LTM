@@ -1,5 +1,5 @@
 import { Button, Drawer, Icon, Tag } from "@blueprintjs/core";
-import type { ConflictResolution, Lead, LeadActionType, Outcome, OverrideReason, ScoringRule, SyncConflict } from "../types";
+import type { ActivityChannel, ConflictResolution, Lead, LeadActionType, Outcome, OverrideReason, ScoringRule, SyncConflict } from "../types";
 import { getRepLoad } from "../lib/capacity";
 import { priorityConfidence } from "../lib/scoring";
 import { isSnoozed } from "../lib/leadActions";
@@ -7,6 +7,7 @@ import type { LeadRecommendation } from "../lib/recommendation";
 import { RecommendationCard } from "./lead-detail/RecommendationCard";
 import { AiAnalysisPanel } from "./lead-detail/AiAnalysisPanel";
 import { LeadActionsBar } from "./lead-detail/LeadActionsBar";
+import { LeadLifecycleStepper } from "./lead-detail/LeadLifecycleStepper";
 import { DownstreamSection } from "./lead-detail/DownstreamSection";
 import { sequenceProgress } from "../lib/downstream";
 import { SectionAccordion } from "./lead-detail/SectionAccordion";
@@ -15,6 +16,8 @@ import { PrioritizationSection } from "./lead-detail/PrioritizationSection";
 import { AssignmentPanel } from "./lead-detail/AssignmentPanel";
 import { WritebackSection } from "./lead-detail/WritebackSection";
 import { OutcomeForm } from "./lead-detail/OutcomeForm";
+import { PredictionOutcomeCard } from "./lead-detail/PredictionOutcomeCard";
+import { DecisionTrace } from "./lead-detail/DecisionTrace";
 import { SuggestedAction, type SuggestedActionKey } from "./lead-detail/SuggestedAction";
 import { ActivityTimeline } from "./lead-detail/ActivityTimeline";
 
@@ -39,6 +42,7 @@ interface LeadDetailPanelProps {
   onAcceptRecommendation: (leadId: string, owner: string) => void;
   onOverrideRecommendation: (leadId: string, owner: string, reason: OverrideReason) => void;
   onLeadAction: (leadId: string, action: LeadActionType) => void;
+  onLogActivity: (leadId: string, payload: { channel: ActivityChannel; note: string; followUpDueAt: string | null }) => void;
   asFullPage?: boolean;
 }
 
@@ -61,6 +65,7 @@ export function LeadDetailPanel({
   onAcceptRecommendation,
   onOverrideRecommendation,
   onLeadAction,
+  onLogActivity,
   asFullPage = false,
 }: LeadDetailPanelProps) {
   if (!lead) {
@@ -120,7 +125,9 @@ export function LeadDetailPanel({
         </div>
       </div>
 
-      <LeadActionsBar lead={lead} onAction={(type) => onLeadAction(lead.id, type)} />
+      <LeadLifecycleStepper lead={lead} />
+
+      <LeadActionsBar lead={lead} onAction={(type) => onLeadAction(lead.id, type)} onLogActivity={(payload) => onLogActivity(lead.id, payload)} />
 
       <AiAnalysisPanel lead={lead} leads={leads} recommendation={recommendation} />
 
@@ -154,6 +161,7 @@ export function LeadDetailPanel({
                 </span>
               </div>
             )}
+            {lead.decision && <DecisionTrace decision={lead.decision} />}
             <AssignmentPanel lead={lead} leads={leads} assigneeOptions={assigneeOptions} onAssign={onAssign} />
           </>
         )}
@@ -179,6 +187,7 @@ export function LeadDetailPanel({
         <div className="lead-detail__section-plain">
           <h5 className="bp5-heading">Outcome</h5>
           <OutcomeForm lead={lead} onLogOutcome={onLogOutcome} />
+          <PredictionOutcomeCard lead={lead} />
           <SuggestedAction lead={lead} onAct={(key) => onSuggestedAction(lead.id, key)} />
         </div>
       )}

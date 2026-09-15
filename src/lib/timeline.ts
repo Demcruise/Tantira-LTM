@@ -1,11 +1,12 @@
 import type { IconName } from "@blueprintjs/icons";
 import type { Lead } from "../types";
-import { LEAD_ACTION_META } from "./leadActions";
+import { CHANNEL_META, LEAD_ACTION_META } from "./leadActions";
 
 export interface TimelineEvent {
   time: string;
   label: string;
   icon: IconName;
+  detail?: string;
 }
 
 function addMinutes(iso: string, minutes: number): string {
@@ -45,7 +46,18 @@ export function buildTimeline(lead: Lead): TimelineEvent[] {
   }
 
   for (const action of lead.actions) {
-    events.push({ time: action.time, label: `${LEAD_ACTION_META[action.type].pastLabel} by ${action.actor}`, icon: LEAD_ACTION_META[action.type].icon });
+    const meta = LEAD_ACTION_META[action.type];
+    const channelLabel = action.channel ? ` via ${CHANNEL_META[action.channel].label}` : "";
+    events.push({
+      time: action.time,
+      label: `${meta.pastLabel}${channelLabel} by ${action.actor}`,
+      icon: action.channel ? CHANNEL_META[action.channel].icon : meta.icon,
+      detail: action.note,
+    });
+  }
+
+  if (lead.followUpDueAt) {
+    events.push({ time: lead.followUpDueAt, label: "Follow-up scheduled", icon: "calendar" });
   }
 
   if (lead.outcome) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { mockLeads } from "./data/mockLeads";
-import type { Lead, LeadActionType, Outcome, OverrideReason } from "./types";
+import type { ActivityChannel, Lead, LeadActionType, Outcome, OverrideReason } from "./types";
 import { KpiRow } from "./components/KpiRow";
 import { ActionBanner } from "./components/ActionBanner";
 import { FiltersBar, type Filters } from "./components/FiltersBar";
@@ -21,13 +21,15 @@ import { PrioritizationModelPage } from "./pages/PrioritizationModelPage";
 import { AutoProcessedLogPage } from "./pages/AutoProcessedLogPage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { NeedsAttentionPage } from "./pages/NeedsAttentionPage";
+import { CommandCenterPage } from "./pages/CommandCenterPage";
+import { ApprovalsPage } from "./pages/ApprovalsPage";
 import { MyLeadsPage } from "./pages/MyLeadsPage";
 import { PerformancePage } from "./pages/PerformancePage";
 import { IntakePage, type IntakeResolution } from "./pages/IntakePage";
 import { INITIAL_INTAKE_ITEMS, INITIAL_INTAKE_SOURCES } from "./data/intake";
 import type { IntakeItem } from "./types";
 import { recommendFor } from "./lib/recommendation";
-import { LEAD_ACTION_META } from "./lib/leadActions";
+import { CHANNEL_META, LEAD_ACTION_META } from "./lib/leadActions";
 import { LeadsAreaTabs } from "./components/needs-attention/LeadsAreaTabs";
 import { LoginPage } from "./pages/LoginPage";
 import AppSidebar4, { type AppView, type FilterPreset } from "./components/app-sidebar-4";
@@ -89,6 +91,7 @@ export function App() {
   const [matrix, setMatrix] = useState<PermissionMatrix>(INITIAL_MATRIX);
   const [ssoConfig, setSsoConfig] = useState<SsoConfig>(INITIAL_SSO_CONFIG);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
+  const [acknowledgedOverrideIds, setAcknowledgedOverrideIds] = useState<Set<string>>(new Set());
   const [notifications, setNotifications] = useState<AppNotification[]>(SEED_NOTIFICATIONS);
   const [auditSearchSeed, setAuditSearchSeed] = useState("");
   const [workflowNodes, setWorkflowNodes] = useState<WorkflowNode[]>([]);
@@ -261,8 +264,18 @@ export function App() {
   function handleAcceptRecommendation(leadId: string, owner: string) {
     const lead = leads.find((l) => l.id === leadId);
     if (!lead) return;
+    const rec = recommendFor(lead, leads, assignmentRules, tierThresholds);
     handleAssign(leadId, owner);
-    const decision = { status: "accepted" as const, recommendedOwner: owner, chosenOwner: owner, decidedAt: new Date().toISOString(), decidedBy: CURRENT_USER };
+    const decision = {
+      status: "accepted" as const,
+      recommendedOwner: owner,
+      chosenOwner: owner,
+      decidedAt: new Date().toISOString(),
+      decidedBy: CURRENT_USER,
+      confidence: rec.confidence,
+      basis: rec.ownerBasis,
+      signals: rec.reasons,
+    };
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, decision } : l)));
     logAction("Accepted recommendation", lead.name, "Unassigned", owner);
     AppToaster.show({ icon: "thumbs-up", intent: "success", message: `${lead.name} assigned to ${owner}. Writeback started — it will appear in ${owner}'s My Leads.` });
@@ -271,12 +284,29 @@ export function App() {
   function handleOverrideRecommendation(leadId: string, owner: string, reason: OverrideReason) {
     const lead = leads.find((l) => l.id === leadId);
     if (!lead) return;
-    const recommended = recommendFor(lead, leads, assignmentRules, tierThresholds).owner;
+    const rec = recommendFor(lead, leads, assignmentRules, tierThresholds);
     handleAssign(leadId, owner);
-    const decision = { status: "overridden" as const, recommendedOwner: recommended, chosenOwner: owner, reason, decidedAt: new Date().toISOString(), decidedBy: CURRENT_USER };
+    const decision = {
+      status: "overridden" as const,
+      recommendedOwner: rec.owner,
+      chosenOwner: owner,
+      reason,
+      decidedAt: new Date().toISOString(),
+      decidedBy: CURRENT_USER,
+      confidence: rec.confidence,
+      basis: rec.ownerBasis,
+      signals: rec.reasons,
+    };
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, decision } : l)));
-    logAction("Overrode recommendation", lead.name, recommended ?? "No recommendation", `${owner} — ${reason}`);
+    logAction("Overrode recommendation", lead.name, rec.owner ?? "No recommendation", `${owner} — ${reason}`);
     AppToaster.show({ icon: "swap-horizontal", intent: "primary", message: `Override recorded (${reason}). ${lead.name} assigned to ${owner}.` });
+  }
+
+  function handleAcknowledgeOverride(leadId: string) {
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    setAcknowledgedOverrideIds((prev) => new Set(prev).add(leadId));
+    logAction("Acknowledged override", lead.name, "Unreviewed", "Reviewed");
   }
 
   function handleLeadAction(leadId: string, type: LeadActionType) {
@@ -317,6 +347,27 @@ export function App() {
     AppToaster.show({ icon: LEAD_ACTION_META[type].icon, intent: LEAD_ACTION_META[type].intent ?? "success", message: `${LEAD_ACTION_META[type].pastLabel}: ${lead.name}` });
   }
 
+  function handleLogActivity(leadId: string, payload: { channel: ActivityChannel; note: string; followUpDueAt: string | null }) {
+    const lead = leads.find((l) => l.id === leadId);
+    if (!lead) return;
+    const now = new Date().toISOString();
+    const patch: Partial<Lead> = {
+      actions: [...lead.actions, { type: "contact", time: now, actor: CURRENT_USER, channel: payload.channel, note: payload.note || undefined }],
+      lastActivity: now,
+      status: lead.status === "New" ? "Contacted" : lead.status,
+      followUpDueAt: payload.followUpDueAt ?? lead.followUpDueAt,
+    };
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
+    logAction(`Logged ${CHANNEL_META[payload.channel].label.toLowerCase()}`, lead.name, lead.status, patch.status ?? lead.status);
+    AppToaster.show({
+      icon: CHANNEL_META[payload.channel].icon,
+      intent: "primary",
+      message: payload.followUpDueAt
+        ? `Logged ${CHANNEL_META[payload.channel].label.toLowerCase()} with ${lead.name}. Follow-up scheduled.`
+        : `Logged ${CHANNEL_META[payload.channel].label.toLowerCase()} with ${lead.name}.`,
+    });
+  }
+
   function handleResolveIntake(itemId: string, resolution: IntakeResolution) {
     const item = intakeItems.find((i) => i.id === itemId);
     if (!item) return;
@@ -347,6 +398,7 @@ export function App() {
         createdAt: now,
         lastActivity: now,
         snoozedUntil: null,
+        followUpDueAt: null,
         actions: [],
         decision: null,
       };
@@ -889,6 +941,12 @@ export function App() {
         </main>
       )}
 
+      {view === "command-center" && (
+        <main className="app-main">
+          <CommandCenterPage leads={leads} connections={connections} autoProcessedLog={autoProcessedLog} onNavigate={navigateTo} />
+        </main>
+      )}
+
       {view === "needs-attention" && (
         <main className="app-main">
           <NeedsAttentionPage
@@ -977,7 +1035,7 @@ export function App() {
 
       {view === "pipeline" && (
         <main className="app-main">
-          <PipelineHealthPage leads={leads} onNavigate={navigateTo} />
+          <PipelineHealthPage leads={leads} autoProcessedLog={autoProcessedLog} onNavigate={navigateTo} />
         </main>
       )}
 
@@ -1003,6 +1061,17 @@ export function App() {
       {view === "audit-log" && (
         <main className="app-main">
           <AuditLogPage entries={auditLog} initialSearch={auditSearchSeed} />
+        </main>
+      )}
+
+      {view === "approvals" && (
+        <main className="app-main">
+          <ApprovalsPage
+            leads={leads}
+            acknowledgedIds={acknowledgedOverrideIds}
+            onAcknowledge={handleAcknowledgeOverride}
+            onOpenLead={(leadId) => setSelectedLeadId(leadId)}
+          />
         </main>
       )}
 
@@ -1090,7 +1159,7 @@ export function App() {
             onCorrectMatch={handleCorrectMatch}
             onResolveAmbiguous={handleResolveAmbiguous}
             onResolveConflict={handleResolveConflict}
-            onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction}
+            onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction} onLogActivity={handleLogActivity}
             asFullPage
           />
         </main>
@@ -1111,7 +1180,7 @@ export function App() {
           onCorrectMatch={handleCorrectMatch}
           onResolveAmbiguous={handleResolveAmbiguous}
           onResolveConflict={handleResolveConflict}
-          onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction}
+          onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction} onLogActivity={handleLogActivity}
         />
       )}
     </div>

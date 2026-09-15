@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Callout, HTMLSelect } from "@blueprintjs/core";
 import type { Lead } from "../../types";
 import { getRepLoad, loadColor } from "../../lib/capacity";
+import { SlaTimestampBreakdown } from "./SlaTimestampBreakdown";
 
 interface AssignmentPanelProps {
   lead: Lead;
@@ -23,6 +24,8 @@ export function AssignmentPanel({ lead, leads, assigneeOptions, onAssign }: Assi
 
   return (
     <div className="assignment-panel">
+      <SlaTimestampBreakdown lead={lead} />
+
       <HTMLSelect fill value={pendingRep} onChange={(e) => setPendingRep(e.target.value)}>
         <option value="" disabled>
           Select owner…

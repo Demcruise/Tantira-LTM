@@ -3,6 +3,7 @@ import { Icon, Tag } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
 import type { Lead } from "../../types";
 import { getEnrichmentData } from "../../lib/enrichment";
+import { OntologyGraph } from "./OntologyGraph";
 
 type StatusIntent = "success" | "warning" | "none";
 
@@ -61,11 +62,24 @@ function buildRows(lead: Lead): EntityRow[] {
 
 export function OntologyLinks({ lead }: { lead: Lead }) {
   const [openType, setOpenType] = useState<string | null>(null);
+  const [view, setView] = useState<"list" | "graph">("list");
   const rows = buildRows(lead);
 
   return (
     <div className="ontology-links">
-      {rows.map((row) => {
+      <div className="ontology-links__view-toggle">
+        <button type="button" className={view === "list" ? "ontology-links__view-btn ontology-links__view-btn--active" : "ontology-links__view-btn"} onClick={() => setView("list")}>
+          List
+        </button>
+        <button type="button" className={view === "graph" ? "ontology-links__view-btn ontology-links__view-btn--active" : "ontology-links__view-btn"} onClick={() => setView("graph")}>
+          Graph
+        </button>
+      </div>
+
+      {view === "graph" ? (
+        <OntologyGraph lead={lead} />
+      ) : (
+        rows.map((row) => {
         const open = openType === row.type;
         return (
           <div key={row.type} className="ontology-links__item">
@@ -90,7 +104,8 @@ export function OntologyLinks({ lead }: { lead: Lead }) {
             {open && <div className="ontology-links__detail">{row.detail}</div>}
           </div>
         );
-      })}
+        })
+      )}
     </div>
   );
 }

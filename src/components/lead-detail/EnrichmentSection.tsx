@@ -18,6 +18,18 @@ function confidenceColor(value: number): string {
   return "#CD4246";
 }
 
+function hash(seed: string, mod: number): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
+  return h % mod;
+}
+
+// Ranked so the first (pre-selected) candidate always reads as the best match —
+// stable per lead+candidate, not random per render.
+function matchConfidence(leadId: string, candidate: string, index: number): number {
+  return Math.max(40, 88 - index * 22 - hash(leadId + candidate, 12));
+}
+
 interface EnrichmentSectionProps {
   lead: Lead;
   onCorrectMatch: (leadId: string) => void;
@@ -45,9 +57,19 @@ export function EnrichmentSection({ lead, onCorrectMatch, onResolveAmbiguous }: 
         </Callout>
 
         <RadioGroup selectedValue={selectedCandidate} onChange={(e) => setSelectedCandidate(e.currentTarget.value)}>
-          {lead.candidateAccounts.map((candidate) => (
-            <Radio key={candidate} label={candidate} value={candidate} />
-          ))}
+          {lead.candidateAccounts.map((candidate, i) => {
+            const confidence = matchConfidence(lead.id, candidate, i);
+            return (
+              <Radio key={candidate} value={candidate}>
+                <span className="enrichment-section__candidate">
+                  {candidate}
+                  <span className="enrichment-section__candidate-confidence" style={{ color: confidenceColor(confidence) }}>
+                    {confidence}% match
+                  </span>
+                </span>
+              </Radio>
+            );
+          })}
         </RadioGroup>
 
         <div className="enrichment-section__ambiguous-actions">

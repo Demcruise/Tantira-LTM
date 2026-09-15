@@ -1,5 +1,6 @@
 import { Tag } from "@blueprintjs/core";
 import type { Priority, LeadStatus } from "../types";
+import type { Segment } from "../lib/enrichment";
 
 const PRIORITY_COLOR: Record<Priority, { bg: string; text: string }> = {
   Hot: { bg: "#FDEBEC", text: "#B3262C" },
@@ -35,6 +36,21 @@ export function StatusTag({ status }: { status: LeadStatus }) {
   return (
     <Tag round style={{ background: bg, color: text }}>
       {status}
+    </Tag>
+  );
+}
+
+const SEGMENT_COLOR: Record<Segment, { bg: string; text: string }> = {
+  Enterprise: { bg: "#F1EBFB", text: "#634DBF" },
+  "Mid-market": { bg: "#EBF1FE", text: "#215DB0" },
+  SMB: { bg: "#EDEFF2", text: "#5F6B7C" },
+};
+
+export function SegmentTag({ segment }: { segment: Segment }) {
+  const { bg, text } = SEGMENT_COLOR[segment];
+  return (
+    <Tag round style={{ background: bg, color: text }}>
+      {segment}
     </Tag>
   );
 }

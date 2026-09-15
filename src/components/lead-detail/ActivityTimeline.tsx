@@ -26,6 +26,7 @@ export function ActivityTimeline({ lead }: { lead: Lead }) {
           </div>
           <div className="activity-timeline__content">
             <div className="activity-timeline__label">{event.label}</div>
+            {event.detail && <div className="activity-timeline__detail">{event.detail}</div>}
             <div className="activity-timeline__time">{formatTime(event.time)}</div>
           </div>
         </div>

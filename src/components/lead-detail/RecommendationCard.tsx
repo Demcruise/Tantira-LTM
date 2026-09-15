@@ -3,6 +3,7 @@ import { Button, HTMLSelect, Icon, Radio, RadioGroup, Tag } from "@blueprintjs/c
 import type { Lead, OverrideReason } from "../../types";
 import type { LeadRecommendation } from "../../lib/recommendation";
 import { PriorityTag } from "../Tags";
+import { ConfidenceMeter } from "../ConfidenceMeter";
 
 const OVERRIDE_REASONS: OverrideReason[] = ["Existing relationship", "Territory ownership", "Rep specialization", "Capacity", "Other"];
 
@@ -24,7 +25,9 @@ export function RecommendationCard({ lead, recommendation, assigneeOptions, onAc
       <div className="recommendation__header">
         <Icon icon="predictive-analysis" size={14} />
         <span>Tantira recommends</span>
-        <span className="recommendation__confidence">{recommendation.confidence}% confidence</span>
+        <span className="recommendation__confidence">
+          <ConfidenceMeter value={recommendation.confidence} label="confidence" />
+        </span>
       </div>
 
       <div className="recommendation__grid">

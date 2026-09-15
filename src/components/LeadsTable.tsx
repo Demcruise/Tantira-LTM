@@ -1,7 +1,10 @@
-import { Checkbox, HTMLTable, Icon, NonIdealState, Spinner, Tooltip } from "@blueprintjs/core";
+import { Checkbox, Icon, NonIdealState, Spinner, Tooltip } from "@blueprintjs/core";
+import { Cell, Column, ColumnHeaderCell, Table2 } from "@blueprintjs/table";
 import type { Lead } from "../types";
-import { PriorityTag, StatusTag } from "./Tags";
+import { PriorityTag, SegmentTag, StatusTag } from "./Tags";
 import { SlaBadge } from "./SlaBadge";
+import { Sparkline, activityBars } from "./Sparkline";
+import { getEnrichmentData } from "../lib/enrichment";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -21,6 +24,8 @@ function formatRelative(iso: string): string {
   if (days === 1) return "Yesterday";
   return `${days} days ago`;
 }
+
+const COLUMN_WIDTHS = [40, 220, 120, 110, 100, 130, 110, 140, 70, 120];
 
 export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, onToggleChecked, onToggleAll, onClearFilters }: LeadsTableProps) {
   if (loading) {
@@ -47,63 +52,172 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
   const checkedVisible = visibleIds.filter((id) => checkedIds.has(id)).length;
   const allChecked = checkedVisible === visibleIds.length;
 
+  function rowClass(lead: Lead): string {
+    return `leads-table2__row${lead.id === selectedId ? " leads-table2__row--selected" : ""}${checkedIds.has(lead.id) ? " leads-table2__row--checked" : ""}`;
+  }
+
   return (
-    <HTMLTable interactive className="leads-table">
-      <thead>
-        <tr>
-          <th className="leads-table__check">
-            <Checkbox
-              checked={allChecked}
-              indeterminate={checkedVisible > 0 && !allChecked}
-              onChange={() => onToggleAll(visibleIds, !allChecked)}
-              aria-label="Select all visible leads"
-            />
-          </th>
-          <th>Lead</th>
-          <th>Source</th>
-          <th>Priority</th>
-          <th>SLA</th>
-          <th>Status</th>
-          <th>Assigned To</th>
-          <th>Last Activity</th>
-        </tr>
-      </thead>
-      <tbody>
-        {leads.map((lead) => (
-          <tr
-            key={lead.id}
-            onClick={() => onSelect(lead)}
-            className={`${lead.id === selectedId ? "leads-table__row--selected" : ""}${checkedIds.has(lead.id) ? " leads-table__row--checked" : ""}`}
-          >
-            <td className="leads-table__check" onClick={(e) => e.stopPropagation()}>
-              <Checkbox checked={checkedIds.has(lead.id)} onChange={() => onToggleChecked(lead.id)} aria-label={`Select ${lead.name}`} />
-            </td>
-            <td>
-              <div className="leads-table__lead-name">
-                {lead.name}
-                {lead.inNurture && (
-                  <Tooltip content="In nurture sequence">
-                    <Icon icon="send-to" size={12} className="leads-table__nurture-icon" />
-                  </Tooltip>
-                )}
+    <div className="leads-table2">
+      <Table2
+        numRows={leads.length}
+        enableRowHeader={false}
+        enableColumnResizing
+        enableGhostCells={false}
+        defaultRowHeight={56}
+        columnWidths={COLUMN_WIDTHS}
+      >
+        <Column
+          name=""
+          columnHeaderCellRenderer={() => (
+            <ColumnHeaderCell>
+              <div className="leads-table2__select-all" onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={allChecked}
+                  indeterminate={checkedVisible > 0 && !allChecked}
+                  onChange={() => onToggleAll(visibleIds, !allChecked)}
+                  aria-label="Select all visible leads"
+                />
               </div>
-              <div className="leads-table__lead-company">{lead.company}</div>
-            </td>
-            <td>{lead.source}</td>
-            <td>
-              <PriorityTag priority={lead.priority} />
-            </td>
-            <td>
-              <SlaBadge lead={lead} />
-            </td>
-            <td>
-              <StatusTag status={lead.status} />
-            </td>
-            <td>{lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>}</td>
-            <td>{formatRelative(lead.lastActivity)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </HTMLTable>
+            </ColumnHeaderCell>
+          )}
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__check-cell" onClick={(e) => e.stopPropagation()}>
+                  <Checkbox checked={checkedIds.has(lead.id)} onChange={() => onToggleChecked(lead.id)} aria-label={`Select ${lead.name}`} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Lead"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <div className="leads-table__lead-name">
+                    {lead.name}
+                    {lead.inNurture && (
+                      <Tooltip content="In nurture sequence">
+                        <Icon icon="send-to" size={12} className="leads-table__nurture-icon" />
+                      </Tooltip>
+                    )}
+                  </div>
+                  <div className="leads-table__lead-company">{lead.company}</div>
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Source"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  {lead.source}
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Segment"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <SegmentTag segment={getEnrichmentData(lead).segment} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Priority"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <PriorityTag priority={lead.priority} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="SLA"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <SlaBadge lead={lead} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Status"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <StatusTag status={lead.status} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Assigned To"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  {lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>}
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Activity"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            const level = getEnrichmentData(lead).engagementEvents;
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  <Sparkline values={activityBars(lead.id, level)} />
+                </div>
+              </Cell>
+            );
+          }}
+        />
+        <Column
+          name="Last Activity"
+          cellRenderer={(rowIndex) => {
+            const lead = leads[rowIndex];
+            return (
+              <Cell className={rowClass(lead)} interactive={false}>
+                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                  {formatRelative(lead.lastActivity)}
+                </div>
+              </Cell>
+            );
+          }}
+        />
+      </Table2>
+    </div>
   );
 }

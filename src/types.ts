@@ -15,10 +15,14 @@ export interface DownstreamSequence {
 export const WON_REASONS = ["Product fit", "Fast response", "Strong relationship", "Pricing fit"] as const;
 export const LOST_REASONS = ["Chose competitor", "No budget", "Timing", "Wrong fit", "No response"] as const;
 
+export type ActivityChannel = "email" | "call" | "meeting";
+
 export interface LeadActionEvent {
   type: LeadActionType;
   time: string; // ISO
   actor: string;
+  channel?: ActivityChannel; // set on "contact" events — how the rep reached out
+  note?: string;
 }
 
 export type OverrideReason = "Existing relationship" | "Territory ownership" | "Rep specialization" | "Capacity" | "Other";
@@ -30,6 +34,11 @@ export interface RecommendationDecision {
   reason?: OverrideReason;
   decidedAt: string; // ISO
   decidedBy: string;
+  // Snapshot of the recommendation AT decision time — a historical trace, not a
+  // live recomputation that could drift if rules/model change afterward.
+  confidence: number;
+  basis: string;
+  signals: string[];
 }
 
 export interface Lead {
@@ -53,6 +62,7 @@ export interface Lead {
   createdAt: string; // ISO
   lastActivity: string; // ISO
   snoozedUntil: string | null; // ISO — hidden from queues until then
+  followUpDueAt: string | null; // ISO — a scheduled follow-up reminder, does not hide the lead
   actions: LeadActionEvent[]; // human actions taken on this lead, newest last
   decision: RecommendationDecision | null; // how the owner recommendation was resolved
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Inbox, LogOut, Plug, Search, Settings, Shield, SlidersHorizontal, Workflow } from "lucide-react";
+import { Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Plug, Search, Settings, Shield, SlidersHorizontal, Workflow } from "lucide-react";
 import type { LeadStatus, Priority } from "../types";
 
 const cx = (...c: (string | false | null | undefined)[]) =>
@@ -41,6 +41,8 @@ const transition =
   "transition-[background-color,border-color,color,opacity] duration-150 ease-out";
 
 export type AppView =
+  | "command-center"
+  | "approvals"
   | "dashboard"
   | "workflow"
   | "assignment"
@@ -93,6 +95,7 @@ const sections: NavSection[] = [
       {
         label: "Work",
         items: [
+          { label: "Command Center", view: "command-center" },
           { label: "Attention Center", view: "needs-attention" },
           { label: "My Leads", view: "my-leads" },
           { label: "All Leads", view: "dashboard", filterPreset: {} },
@@ -148,6 +151,7 @@ const sections: NavSection[] = [
       {
         label: "Records",
         items: [
+          { label: "Approvals", view: "approvals" },
           { label: "Audit Log", view: "audit-log" },
           { label: "Notification Preferences", view: "notification-preferences" },
         ],
@@ -166,6 +170,7 @@ interface AppSidebar4Props {
 export default function AppSidebar4({ activeView, activeFilters, onNavigate, onLogout }: AppSidebar4Props) {
   const initialSectionIndex = sections.findIndex((s) => s.groups.some((g) => g.items.some((i) => i.view === activeView)));
   const [sectionIndex, setSectionIndex] = useState(Math.max(initialSectionIndex, 0));
+  const [collapsed, setCollapsed] = useState(false);
   const section = sections[sectionIndex];
 
   function isItemActive(item: NavItem): boolean {
@@ -235,7 +240,25 @@ export default function AppSidebar4({ activeView, activeFilters, onNavigate, onL
             )}
           />
         </div>
-        <div className="flex h-[60px] w-full shrink-0 items-center justify-center bg-neutral-100/70 dark:bg-neutral-800/40">
+        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-1 bg-neutral-100/70 py-2 dark:bg-neutral-800/40">
+          <button
+            type="button"
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-pressed={collapsed}
+            onClick={() => setCollapsed((c) => !c)}
+            className={cx(
+              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 dark:active:bg-neutral-700",
+              transition,
+              focus,
+            )}
+          >
+            {collapsed ? (
+              <PanelLeftOpen aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
+            )}
+          </button>
           <button
             type="button"
             title="Workspace settings"
@@ -251,6 +274,7 @@ export default function AppSidebar4({ activeView, activeFilters, onNavigate, onL
         </div>
       </aside>
 
+      {!collapsed && (
       <div className="flex w-full min-w-0 flex-col bg-neutral-50 sm:w-64 sm:shrink-0 dark:bg-neutral-900">
         <div className="flex h-14 shrink-0 items-center gap-2 pl-5 pr-2">
           <h2 className="min-w-0 flex-1 truncate text-base font-medium tracking-[-0.01em] text-neutral-900 dark:text-neutral-100">
@@ -367,6 +391,7 @@ export default function AppSidebar4({ activeView, activeFilters, onNavigate, onL
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }
