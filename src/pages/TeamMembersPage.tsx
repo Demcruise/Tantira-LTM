@@ -1,20 +1,21 @@
 import { useState } from "react";
 import { Button, Card, HTMLSelect, HTMLTable, Tag } from "@blueprintjs/core";
 import type { MemberRole, TeamMember } from "../types";
-import { SYSTEM_ROLES } from "../types";
+import type { RoleDef } from "../data/permissions";
 import { InviteMemberDialog } from "../components/team/InviteMemberDialog";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { PageHeader } from "../components/PageHeader";
 
 interface TeamMembersPageProps {
   members: TeamMember[];
+  roles: RoleDef[];
   onInvite: (email: string, role: MemberRole) => void;
   onChangeRole: (memberId: string, role: MemberRole) => void;
   onResend: (memberId: string) => void;
   onRevoke: (memberId: string) => void;
 }
 
-export function TeamMembersPage({ members, onInvite, onChangeRole, onResend, onRevoke }: TeamMembersPageProps) {
+export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onResend, onRevoke }: TeamMembersPageProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<TeamMember | null>(null);
 
@@ -43,17 +44,27 @@ export function TeamMembersPage({ members, onInvite, onChangeRole, onResend, onR
               <td>{m.status === "Pending" ? <span className="team-page__pending-name">{m.email}</span> : m.name}</td>
               <td>{m.email}</td>
               <td>
-                <HTMLSelect
-                  minimal
-                  value={m.role}
-                  onChange={(e) => onChangeRole(m.id, e.target.value as MemberRole)}
-                >
-                  {SYSTEM_ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </HTMLSelect>
+                <div className="team-page__role-cell">
+                  <HTMLSelect
+                    minimal
+                    value={m.role}
+                    onChange={(e) => onChangeRole(m.id, e.target.value as MemberRole)}
+                  >
+                    {roles.map((r) => (
+                      <option key={r.id} value={r.name}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </HTMLSelect>
+                  {(() => {
+                    const scope = roles.find((r) => r.name === m.role)?.scope;
+                    return scope ? (
+                      <Tag minimal round intent="primary">
+                        {scope} only
+                      </Tag>
+                    ) : null;
+                  })()}
+                </div>
               </td>
               <td>
                 <Tag minimal intent={m.status === "Active" ? "success" : "warning"}>
@@ -74,7 +85,7 @@ export function TeamMembersPage({ members, onInvite, onChangeRole, onResend, onR
       </HTMLTable>
       </Card>
 
-      <InviteMemberDialog isOpen={inviteOpen} onClose={() => setInviteOpen(false)} onInvite={onInvite} />
+      <InviteMemberDialog isOpen={inviteOpen} roles={roles} onClose={() => setInviteOpen(false)} onInvite={onInvite} />
 
       <ConfirmDialog
         isOpen={revokeTarget !== null}

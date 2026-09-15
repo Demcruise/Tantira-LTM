@@ -6,6 +6,7 @@ import { TierThresholdEditor } from "../components/prioritization/TierThresholdE
 import { LiveSimulatorPanel } from "../components/prioritization/LiveSimulatorPanel";
 import { ModelChangeHistory } from "../components/prioritization/ModelChangeHistory";
 import { ModelFeedbackPanel } from "../components/prioritization/ModelFeedbackPanel";
+import { DryRunModelPanel } from "../components/prioritization/DryRunModelPanel";
 
 interface PrioritizationModelPageProps {
   rules: ScoringRule[];
@@ -61,6 +62,8 @@ export function PrioritizationModelPage({
         />
 
         <ModelFeedbackPanel leads={leads} />
+
+        <DryRunModelPanel liveThresholds={thresholds} leads={leads} onApply={onCommitThresholds} />
 
         <ModelChangeHistory entries={modelHistory} />
       </div>

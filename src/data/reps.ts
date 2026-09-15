@@ -10,3 +10,7 @@ export const REPS: Rep[] = [
   { name: "Adi Nugraha", capacity: 8, territory: ["Surabaya", "Semarang", "Denpasar"], specialties: ["Technology", "Manufacturing"] },
   { name: "Sari Handayani", capacity: 8, territory: ["Jakarta", "Medan"], specialties: ["Financial Services", "Healthcare"] },
 ];
+
+// Same territory taxonomy assignment routing already uses — scoped roles restrict
+// to one of these rather than inventing a separate "team" concept.
+export const ALL_TERRITORIES = Array.from(new Set(REPS.flatMap((r) => r.territory))).sort();

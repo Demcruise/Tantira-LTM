@@ -1,22 +1,28 @@
 import { useState } from "react";
 import { Button, Classes, Dialog, FormGroup, HTMLSelect, InputGroup } from "@blueprintjs/core";
-import { SYSTEM_ROLES, type MemberRole } from "../../types";
+import type { MemberRole } from "../../types";
+import type { RoleDef } from "../../data/permissions";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
+  roles: RoleDef[];
   onClose: () => void;
   onInvite: (email: string, role: MemberRole) => void;
 }
 
-export function InviteMemberDialog({ isOpen, onClose, onInvite }: InviteMemberDialogProps) {
+function defaultRole(roles: RoleDef[]): MemberRole {
+  return roles.find((r) => r.name === "Rep")?.name ?? roles[0]?.name ?? "";
+}
+
+export function InviteMemberDialog({ isOpen, roles, onClose, onInvite }: InviteMemberDialogProps) {
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<MemberRole>("Rep");
+  const [role, setRole] = useState<MemberRole>(defaultRole(roles));
 
   function handleInvite() {
     if (!email.trim()) return;
     onInvite(email.trim(), role);
     setEmail("");
-    setRole("Rep");
+    setRole(defaultRole(roles));
     onClose();
   }
 
@@ -33,9 +39,10 @@ export function InviteMemberDialog({ isOpen, onClose, onInvite }: InviteMemberDi
         </FormGroup>
         <FormGroup label="Role" labelFor="invite-role">
           <HTMLSelect id="invite-role" fill value={role} onChange={(e) => setRole(e.target.value as MemberRole)}>
-            {SYSTEM_ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
+            {roles.map((r) => (
+              <option key={r.id} value={r.name}>
+                {r.name}
+                {r.scope ? ` (${r.scope} only)` : ""}
               </option>
             ))}
           </HTMLSelect>

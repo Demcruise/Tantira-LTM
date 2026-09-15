@@ -54,6 +54,8 @@ export function EnrichmentSection({ lead, onCorrectMatch, onResolveAmbiguous }: 
           <Button intent="primary" text="Confirm match" disabled={!selectedCandidate} onClick={() => onResolveAmbiguous(lead.id, selectedCandidate)} />
           <Button minimal text="None of these — create new" onClick={() => onResolveAmbiguous(lead.id, "new")} />
         </div>
+
+        <OntologyLinks lead={lead} />
       </div>
     );
   }

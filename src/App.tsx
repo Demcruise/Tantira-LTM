@@ -30,7 +30,8 @@ import { recommendFor } from "./lib/recommendation";
 import { LEAD_ACTION_META } from "./lib/leadActions";
 import { LeadsAreaTabs } from "./components/needs-attention/LeadsAreaTabs";
 import { LoginPage } from "./pages/LoginPage";
-import AppSidebar4, { type AppView, type FilterPreset } from "./components/app-sidebar-4";
+import { type AppView, type FilterPreset } from "./components/app-sidebar-4";
+import AppSidebar1 from "./components/app-sidebar-1";
 import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
 import { REPS } from "./data/reps";
@@ -191,6 +192,7 @@ export function App() {
     setAuthenticated(false);
     setSelectedLeadId(null);
   }
+  void handleLogout; // app-sidebar-1 preview has no logout hook — wire back up if it replaces app-sidebar-4 for real
 
   function runWriteback(leadId: string) {
     setTimeout(() => {
@@ -535,15 +537,15 @@ export function App() {
     });
   }
 
-  function handleCreateRole(name: string) {
+  function handleCreateRole(name: string, scope: string | null) {
     const id = `role-${Date.now()}`;
-    setRoles((prev) => [...prev, { id, name, system: false }]);
+    setRoles((prev) => [...prev, { id, name, system: false, scope }]);
     setMatrix((prev) => ({
       ...prev,
       [id]: Object.fromEntries(PERMISSIONS.map((p) => [p.key, false])),
     }));
-    logAction("Created role", name, undefined, "0 permissions granted");
-    AppToaster.show({ icon: "new-person", intent: "primary", message: `Created role "${name}".` });
+    logAction("Created role", name, undefined, scope ? `0 permissions granted, scoped to ${scope}` : "0 permissions granted");
+    AppToaster.show({ icon: "new-person", intent: "primary", message: `Created role "${name}"${scope ? ` — scoped to ${scope}` : ""}.` });
   }
 
   function handleDeleteRole(roleId: string) {
@@ -819,12 +821,7 @@ export function App() {
   return (
     <div className="app-shell app-shell--sidebar">
       <div className="app-sidebar">
-        <AppSidebar4
-          activeView={view}
-          activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
-          onNavigate={navigateTo}
-          onLogout={handleLogout}
-        />
+        <AppSidebar1 />
       </div>
 
       <div className="app-content">
@@ -988,6 +985,7 @@ export function App() {
         <main className="app-main">
           <TeamMembersPage
             members={members}
+            roles={roles}
             onInvite={handleInviteMember}
             onChangeRole={handleChangeRole}
             onResend={handleResendInvite}

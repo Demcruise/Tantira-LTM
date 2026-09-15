@@ -72,7 +72,7 @@ export const SLA_HOURS_BY_PRIORITY: Record<Priority, number> = {
 
 // --- Enterprise admin: Team Members ---
 
-export type MemberRole = "Admin" | "Sales Ops" | "Rep";
+export type MemberRole = string; // role name — looked up against RoleDef[] for permissions and scope
 export type MemberStatus = "Active" | "Pending";
 
 export interface TeamMember {
@@ -82,8 +82,6 @@ export interface TeamMember {
   role: MemberRole;
   status: MemberStatus;
 }
-
-export const SYSTEM_ROLES: MemberRole[] = ["Admin", "Sales Ops", "Rep"];
 
 // --- Enterprise admin: Audit Log ---
 

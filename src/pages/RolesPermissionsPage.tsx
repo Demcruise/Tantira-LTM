@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Button, Card, Checkbox, HTMLTable, Tooltip } from "@blueprintjs/core";
+import { Button, Card, Checkbox, HTMLTable, Tag, Tooltip } from "@blueprintjs/core";
 import { PERMISSIONS, PERMISSION_MODULES, type PermissionMatrix, type RoleDef } from "../data/permissions";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { CreateRoleDialog } from "../components/permissions/CreateRoleDialog";
@@ -9,7 +9,7 @@ interface RolesPermissionsPageProps {
   roles: RoleDef[];
   matrix: PermissionMatrix;
   onTogglePermission: (roleId: string, permKey: string, granted: boolean) => void;
-  onCreateRole: (name: string) => void;
+  onCreateRole: (name: string, scope: string | null) => void;
   onDeleteRole: (roleId: string) => void;
 }
 
@@ -58,6 +58,13 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
                       />
                     </Tooltip>
                   </div>
+                  {role.scope ? (
+                    <Tag minimal round intent="primary" className="roles-page__scope-tag">
+                      {role.scope} only
+                    </Tag>
+                  ) : (
+                    <span className="roles-page__scope-plain">Workspace-wide</span>
+                  )}
                 </th>
               ))}
             </tr>

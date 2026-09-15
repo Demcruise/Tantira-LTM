@@ -5,6 +5,7 @@ import { priorityConfidence } from "../lib/scoring";
 import { isSnoozed } from "../lib/leadActions";
 import type { LeadRecommendation } from "../lib/recommendation";
 import { RecommendationCard } from "./lead-detail/RecommendationCard";
+import { AiAnalysisPanel } from "./lead-detail/AiAnalysisPanel";
 import { LeadActionsBar } from "./lead-detail/LeadActionsBar";
 import { DownstreamSection } from "./lead-detail/DownstreamSection";
 import { sequenceProgress } from "../lib/downstream";
@@ -118,6 +119,8 @@ export function LeadDetailPanel({
       </div>
 
       <LeadActionsBar lead={lead} onAction={(type) => onLeadAction(lead.id, type)} />
+
+      <AiAnalysisPanel lead={lead} leads={leads} recommendation={recommendation} />
 
       <SectionAccordion flagged={enrichmentFlagged} title="Enrichment" summary={enrichmentSummary}>
         <EnrichmentSection lead={lead} onCorrectMatch={onCorrectMatch} onResolveAmbiguous={onResolveAmbiguous} />
