@@ -54,6 +54,10 @@ function evalCondition(sample: SampleLeadInput, cond: Condition): boolean {
         return a === b;
       case "!=":
         return a !== b;
+      default: {
+        const _exhaustive: never = cond.operator;
+        throw new Error(`Unknown operator: ${_exhaustive}`);
+      }
     }
   }
 
@@ -64,8 +68,13 @@ function evalCondition(sample: SampleLeadInput, cond: Condition): boolean {
       return a === b;
     case "!=":
       return a !== b;
-    default:
-      return false;
+    case ">":
+    case "<":
+      throw new Error(`Operator '${cond.operator}' requires a numeric field value, got: ${String(fieldValue)}`);
+    default: {
+      const _exhaustive: never = cond.operator;
+      throw new Error(`Unknown operator: ${_exhaustive}`);
+    }
   }
 }
 
