@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Card, HTMLSelect, HTMLTable, Tag } from "@blueprintjs/core";
+import { Button, Card, Checkbox, HTMLSelect, HTMLTable, Tag } from "@blueprintjs/core";
 import type { MemberRole, TeamMember } from "../types";
 import type { RoleDef } from "../data/permissions";
 import { InviteMemberDialog } from "../components/team/InviteMemberDialog";
@@ -15,9 +15,46 @@ interface TeamMembersPageProps {
   onRevoke: (memberId: string) => void;
 }
 
+/** Extract initials (up to 2 chars) from a name or email. */
+function initialsOf(name: string, email: string): string {
+  const source = name || email;
+  const parts = source.split(/[\s@._-]+/).filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+}
+
 export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onResend, onRevoke }: TeamMembersPageProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<TeamMember | null>(null);
+  const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
+
+  const pendingMembers = members.filter((m) => m.status === "Pending");
+  const checkedPending = pendingMembers.filter((m) => checkedIds.has(m.id));
+  const allPendingChecked = pendingMembers.length > 0 && checkedPending.length === pendingMembers.length;
+
+  function toggleAll() {
+    if (allPendingChecked) setCheckedIds(new Set());
+    else setCheckedIds(new Set(pendingMembers.map((m) => m.id)));
+  }
+
+  function toggleOne(id: string) {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function bulkResend() {
+    checkedPending.forEach((m) => onResend(m.id));
+    setCheckedIds(new Set());
+  }
+
+  function bulkRevoke() {
+    checkedPending.forEach((m) => onRevoke(m.id));
+    setCheckedIds(new Set());
+  }
 
   return (
     <div className="team-page">
@@ -28,11 +65,25 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
         actions={<Button intent="primary" icon="add" text="Invite member" onClick={() => setInviteOpen(true)} />}
       />
 
+      {checkedPending.length > 0 && (
+        <div className="team-bulk-bar" role="toolbar" aria-label="Bulk actions">
+          <span className="team-bulk-bar__count">
+            <strong>{checkedPending.length}</strong> pending invite{checkedPending.length === 1 ? "" : "s"} selected
+          </span>
+          <Button small icon="refresh" text="Resend all" onClick={bulkResend} />
+          <Button small intent="danger" icon="cross" text="Revoke all" onClick={bulkRevoke} />
+          <Button small minimal text="Clear" onClick={() => setCheckedIds(new Set())} />
+        </div>
+      )}
+
       <Card className="page-card">
       <div className="table-scroll-wrap">
         <HTMLTable className="team-page__table">
         <thead>
           <tr>
+            <th className="team-page__check-col">
+              <Checkbox checked={allPendingChecked} indeterminate={checkedPending.length > 0 && !allPendingChecked} onChange={toggleAll} aria-label="Select all pending" />
+            </th>
             <th>Name</th>
             <th>Email</th>
             <th>Role</th>
@@ -43,7 +94,17 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
         <tbody>
           {members.map((m) => (
             <tr key={m.id}>
-              <td>{m.status === "Pending" ? <span className="team-page__pending-name">{m.email}</span> : m.name}</td>
+              <td className="team-page__check-col">
+                {m.status === "Pending" && (
+                  <Checkbox checked={checkedIds.has(m.id)} onChange={() => toggleOne(m.id)} aria-label={`Select ${m.email}`} />
+                )}
+              </td>
+              <td>
+                <div className="team-page__name-cell">
+                  <span className="team-page__avatar" aria-hidden="true">{initialsOf(m.name, m.email)}</span>
+                  {m.status === "Pending" ? <span className="team-page__pending-name">{m.email}</span> : m.name}
+                </div>
+              </td>
               <td>{m.email}</td>
               <td>
                 <div className="team-page__role-cell">

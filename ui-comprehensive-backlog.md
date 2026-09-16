@@ -38,7 +38,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 
 **11. API Keys page** — current page already has generate/revoke with a confirm dialog. Gap vs. reference: no scope badges shown per key, and needs confirming whether a freshly-generated secret is shown once with a copy button (the reference's best idea, and copy-able onto our stack with a Blueprint `Callout` + `Tag` + a `navigator.clipboard` copy button — no new dependency needed). Needs a quick look at the current page before scoping the exact diff.
 
-**12. Team Members page** — reference's real value-adds: avatar chips, status badges, bulk-select toolbar. All buildable with existing patterns: initials-avatar chip (same visual as the sidebar's "RC" user chip), Blueprint `Tag` for status, and the same checkbox+`BulkActionBar` pattern already proven on the Leads table. Genuine "bring it up to the same standard as the Leads table" task — moderate effort, high consistency payoff.
+**12. Team Members page** — ~~reference's real value-adds: avatar chips, status badges, bulk-select toolbar. All buildable with existing patterns: initials-avatar chip (same visual as the sidebar's "RC" user chip), Blueprint `Tag` for status, and the same checkbox+`BulkActionBar` pattern already proven on the Leads table. Genuine "bring it up to the same standard as the Leads table" task — moderate effort, high consistency payoff.~~ **DONE** — Added initials avatar chips (28px circle, initials from name/email) in the Name column, checkbox column for bulk selection (Pending members only — Active members have no bulk actions), and a bulk action bar with "Resend all" / "Revoke all" / "Clear" that appears when pending invites are selected. Status badges (Tag) already existed. Verified: typecheck + build pass; checkboxes toggle individual rows; select-all checkbox in header has indeterminate state; bulk bar appears only when ≥1 pending invite is checked.
 
 **13. Roles & Permissions layout** — the reference component (contributors-per-project with avatar stacks) doesn't actually match this page's data shape, which is a permission×role matrix, not a per-project staff list. Recommend keeping the matrix (it's the right structure for the data) and instead polishing it: sticky column headers, tighter zebra striping — the module grouping already exists. Flagging the literal reference as a mismatch rather than forcing it.
 
@@ -59,7 +59,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 1. ~~N1, N2, N3~~ **DONE** — all three fixed and verified live.
 2. ~~#10a (stepper stretch)~~ **DONE** — `flex: 1` on `.wf-lifecycle__step`, stretches full width.
 3. ~~#8 (Drawer→Dialog)~~ **DONE** — LeadDetailPanel now uses centered Dialog with backdrop.
-4. #12 (Team Members) — clear scope, reuses proven patterns (avatar chip, bulk toolbar).
+4. ~~#12 (Team Members)~~ **DONE** — avatar chips, bulk-select toolbar with Resend/Revoke all.
 5. #1 (sortable columns), #10b (toolbar overflow menu) — both need the "measure + decide" pattern; do together.
 6. #11, #15, #16 — each needs a quick look at current state before finalizing scope; small-to-medium once scoped.
 7. #6, #7, #13 — polish-only, lowest urgency.

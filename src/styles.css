@@ -5929,3 +5929,41 @@ textarea.wf-node-code {
   max-height: 70vh;
   overflow-y: auto;
 }
+
+/* ── Team Members: avatar chips + bulk bar ── */
+.team-page__avatar {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e1e8f5;
+  color: #2d4f8a;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.team-page__name-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.team-page__check-col {
+  width: 32px;
+  vertical-align: middle;
+}
+.team-bulk-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #e8f1fc;
+  border: 1px solid #c5d9f5;
+  border-radius: 6px;
+}
+.team-bulk-bar__count {
+  font-size: 13px;
+  margin-right: auto;
+}
