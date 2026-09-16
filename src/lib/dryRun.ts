@@ -22,6 +22,10 @@ function evaluateCondition(node: ConditionNode, lead: Lead): { taken: "then" | "
     case "<=": result = a <= b; break;
     case "=": result = a === b; break;
     case "!=": result = a !== b; break;
+    default: {
+      const _exhaustive: never = node.operator;
+      throw new Error(`Unknown operator: ${_exhaustive}`);
+    }
   }
   return { taken: result ? "then" : "else", detail: `${node.left} = ${String(actual)} · ${node.operator} ${node.right} is ${result ? "true → Then" : "false → Else"}` };
 }

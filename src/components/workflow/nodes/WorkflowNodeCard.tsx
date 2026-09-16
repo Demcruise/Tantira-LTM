@@ -81,6 +81,10 @@ export function WorkflowNodeCard(props: WorkflowNodeCardProps) {
           />
         );
       }
+      default: {
+        const _exhaustive: never = node;
+        throw new Error(`Unknown node kind: ${_exhaustive}`);
+      }
     }
   }
 

@@ -17,6 +17,40 @@ interface WorkflowLifecycleBarProps {
   onDiscard: () => void;
 }
 
+type LifecycleStep = "Draft" | "Test" | "Validate" | "Publish" | "Monitor";
+
+// Each step's "done" condition reads as a single clear statement.
+function isStepDone(step: LifecycleStep, s: { dirty: boolean; testedSinceChange: boolean; validated: boolean }): boolean {
+  switch (step) {
+    case "Draft":
+      return s.dirty; // draft exists once there are unpublished changes
+    case "Test":
+      return s.testedSinceChange || !s.dirty;
+    case "Validate":
+      return s.validated || !s.dirty;
+    case "Publish":
+      return !s.dirty; // published once changes are committed
+    case "Monitor":
+      return !s.dirty; // monitoring the published version
+  }
+}
+
+// Each step's "current" condition reads as a single clear statement.
+function isStepCurrent(step: LifecycleStep, s: { dirty: boolean; testedSinceChange: boolean; validated: boolean; stage: string }): boolean {
+  switch (step) {
+    case "Draft":
+      return s.dirty && !s.testedSinceChange;
+    case "Test":
+      return s.dirty && !s.testedSinceChange;
+    case "Validate":
+      return s.dirty && s.testedSinceChange && !s.validated;
+    case "Publish":
+      return s.stage === "ready";
+    case "Monitor":
+      return !s.dirty;
+  }
+}
+
 export function WorkflowLifecycleBar({
   published,
   previousVersion,
@@ -55,9 +89,9 @@ export function WorkflowLifecycleBar({
       </div>
 
       <div className="wf-lifecycle__steps">
-        {["Draft", "Test", "Validate", "Publish", "Monitor"].map((label, i) => {
-          const done = [dirty || !dirty, testedSinceChange || !dirty, validated || !dirty, !dirty, !dirty][i];
-          const current = (label === "Draft" && dirty && !testedSinceChange) || (label === "Test" && dirty && !testedSinceChange) || (label === "Validate" && dirty && testedSinceChange && !validated) || (label === "Publish" && stage === "ready") || (label === "Monitor" && !dirty);
+        {(["Draft", "Test", "Validate", "Publish", "Monitor"] as const).map((label) => {
+          const done = isStepDone(label, { dirty, testedSinceChange, validated });
+          const current = isStepCurrent(label, { dirty, testedSinceChange, validated, stage });
           return (
             <span key={label} className={`wf-lifecycle__step${done ? " wf-lifecycle__step--done" : ""}${current ? " wf-lifecycle__step--current" : ""}`}>
               {label}

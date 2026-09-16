@@ -52,6 +52,8 @@ export function recommendFor(lead: Lead, leads: Lead[], rules: AssignmentRule[],
       { label: rep.territory.includes(data.region) ? `Territory: ${data.region}` : `Outside territory (${rep.territory.join(", ")})`, ok: rep.territory.includes(data.region) },
       { label: rep.specialties.includes(data.industry) ? `Specialty: ${data.industry}` : `No ${data.industry} specialty`, ok: rep.specialties.includes(data.industry) },
     ];
+    // Specialty (checks[2]) is a soft preference — shown to the user but not a
+    // hard gate. Only capacity and territory determine eligibility.
     return { rep: rep.name, eligible: checks[0].ok && checks[1].ok, load: `${total}/${rep.capacity}`, checks };
   });
 

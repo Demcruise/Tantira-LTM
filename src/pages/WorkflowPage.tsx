@@ -214,6 +214,10 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
             />
           </LoopBlock>
         );
+      default: {
+        const _exhaustive: never = stage;
+        throw new Error(`Unknown fixed stage kind: ${_exhaustive}`);
+      }
     }
   }
 

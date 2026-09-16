@@ -330,6 +330,10 @@ export function App() {
       case "escalate":
         addNotification({ id: `N-${Date.now()}`, title: "Escalation raised", subtitle: lead.name, time: now, read: false, leadId, reason: "sla_at_risk" });
         break;
+      default: {
+        const _exhaustive: never = type;
+        throw new Error(`Unknown lead action: ${_exhaustive}`);
+      }
     }
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
     logAction(LEAD_ACTION_META[type].pastLabel, lead.name, lead.status, patch.status ?? lead.status);
@@ -486,6 +490,10 @@ export function App() {
         logAction("Exported leads", plural, undefined, "CSV");
         AppToaster.show({ icon: "export", intent: "primary", message: `Preparing CSV for ${plural} — we'll notify you when it's ready.` });
         break;
+      }
+      default: {
+        const _exhaustive: never = action;
+        throw new Error(`Unknown bulk action: ${_exhaustive}`);
       }
     }
     if (action.type !== "export") setCheckedLeadIds(new Set());

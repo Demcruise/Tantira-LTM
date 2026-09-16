@@ -30,6 +30,9 @@ export function validateWorkflow(nodes: WorkflowNode[]): ValidationIssue[] {
       case "get-object-property":
         if (!node.outputVar.trim()) issues.push({ nodeId: node.id, label, message: "Output variable name is empty." });
         break;
+      case "apply-action":
+        // apply-action nodes delegate to the action definition — no local validation needed.
+        break;
       case "use-llm":
         if (!node.prompt.trim()) issues.push({ nodeId: node.id, label, message: "Prompt template is empty." });
         if (node.maxTokens <= 0) issues.push({ nodeId: node.id, label, message: "Max tokens must be positive." });
@@ -49,6 +52,10 @@ export function validateWorkflow(nodes: WorkflowNode[]): ValidationIssue[] {
         break;
       case "end":
         break;
+      default: {
+        const _exhaustive: never = node;
+        throw new Error(`Unknown node kind: ${_exhaustive}`);
+      }
     }
   }
   return issues;
