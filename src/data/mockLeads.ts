@@ -1,5 +1,14 @@
-import type { Lead } from "../types";
-import { scoreToPriority } from "../lib/scoring";
+import type { Lead, Priority } from "../types";
+
+// Inlined here (rather than imported from lib/scoring) to keep data as a leaf
+// layer that depends only on types — lib/scoring already depends on data via
+// recommendation/capacity/ruleEngine, so importing it back here would create a
+// bidirectional data<->lib coupling.
+function scoreToPriority(score: number): Priority {
+  if (score >= 75) return "Hot";
+  if (score >= 45) return "Warm";
+  return "Cold";
+}
 
 const names = [
   ["Amara Wicaksono", "Nusantara Retail"],
