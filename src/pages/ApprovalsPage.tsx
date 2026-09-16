@@ -1,5 +1,5 @@
 import { Button, Card, HTMLTable, NonIdealState, Tag } from "@blueprintjs/core";
-import type { Lead } from "../types";
+import type { Lead, RecommendationDecision } from "../types";
 import { PageHeader } from "../components/PageHeader";
 import { relativeTime } from "../lib/relativeTime";
 
@@ -10,10 +10,15 @@ interface ApprovalsPageProps {
   onOpenLead: (leadId: string) => void;
 }
 
+function hasOverriddenDecision(lead: Lead): lead is Lead & { decision: RecommendationDecision } {
+  return lead.decision?.status === "overridden";
+}
+
 export function ApprovalsPage({ leads, acknowledgedIds, onAcknowledge, onOpenLead }: ApprovalsPageProps) {
   const overridden = leads
-    .filter((l) => l.decision?.status === "overridden" && !acknowledgedIds.has(l.id))
-    .sort((a, b) => new Date(b.decision!.decidedAt).getTime() - new Date(a.decision!.decidedAt).getTime());
+    .filter(hasOverriddenDecision)
+    .filter((l) => !acknowledgedIds.has(l.id))
+    .sort((a, b) => new Date(b.decision.decidedAt).getTime() - new Date(a.decision.decidedAt).getTime());
 
   return (
     <div className="approvals-page">
@@ -46,15 +51,15 @@ export function ApprovalsPage({ leads, acknowledgedIds, onAcknowledge, onOpenLea
                     <div className="approvals-page__lead-name">{lead.name}</div>
                     <div className="approvals-page__lead-company">{lead.company}</div>
                   </td>
-                  <td>{lead.decision!.recommendedOwner ?? <span className="approvals-page__muted">None eligible</span>}</td>
+                  <td>{lead.decision.recommendedOwner ?? <span className="approvals-page__muted">None eligible</span>}</td>
                   <td>
-                    <strong>{lead.decision!.chosenOwner}</strong>
+                    <strong>{lead.decision.chosenOwner}</strong>
                   </td>
                   <td>
-                    <Tag minimal>{lead.decision!.reason}</Tag>
+                    <Tag minimal>{lead.decision.reason}</Tag>
                   </td>
-                  <td>{lead.decision!.decidedBy}</td>
-                  <td>{relativeTime(lead.decision!.decidedAt)}</td>
+                  <td>{lead.decision.decidedBy}</td>
+                  <td>{relativeTime(lead.decision.decidedAt)}</td>
                   <td>
                     <div className="approvals-page__row-actions">
                       <Button minimal small text="Open lead" onClick={() => onOpenLead(lead.id)} />
