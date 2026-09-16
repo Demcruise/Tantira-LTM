@@ -15,6 +15,14 @@ export function useNotifications(onOpenLead: (leadId: string) => void, onOpenAud
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }
 
+  function handleMarkRead(notificationId: string) {
+    setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n)));
+  }
+
+  function handleMarkUnread(notificationId: string) {
+    setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n)));
+  }
+
   function handleSelectNotification(notification: AppNotification) {
     setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
     if (notification.leadId) {
@@ -24,5 +32,5 @@ export function useNotifications(onOpenLead: (leadId: string) => void, onOpenAud
     }
   }
 
-  return { notifications, addNotification, handleMarkAllNotificationsRead, handleSelectNotification };
+  return { notifications, addNotification, handleMarkAllNotificationsRead, handleMarkRead, handleMarkUnread, handleSelectNotification };
 }

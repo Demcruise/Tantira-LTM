@@ -5993,3 +5993,34 @@ textarea.wf-node-code {
   flex-shrink: 0;
   padding: 9px 14px;
 }
+
+/* Notifications panel: tabs + per-row menu */
+.notifications-panel__tabs {
+  margin: 0 0 4px;
+}
+.notifications-panel__tabs .bp5-tab {
+  font-size: 12px;
+}
+.notifications-panel__footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+/* Notification Preferences: event descriptions + zebra striping */
+.notif-prefs-page__event-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.notif-prefs-page__event-label {
+  font-weight: 500;
+}
+.notif-prefs-page__event-desc {
+  font-size: 12px;
+  color: #5f6b7c;
+}
+.notif-prefs-page__table tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}

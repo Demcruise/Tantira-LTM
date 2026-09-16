@@ -8,10 +8,12 @@ interface AppHeaderProps {
   leads: Lead[];
   onMarkAllRead: () => void;
   onSelectNotification: (notification: AppNotification) => void;
+  onMarkRead: (notificationId: string) => void;
+  onMarkUnread: (notificationId: string) => void;
   onToggleSidebar?: () => void;
 }
 
-export function AppHeader({ notifications, leads, onMarkAllRead, onSelectNotification, onToggleSidebar }: AppHeaderProps) {
+export function AppHeader({ notifications, leads, onMarkAllRead, onSelectNotification, onMarkRead, onMarkUnread, onToggleSidebar }: AppHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -41,6 +43,8 @@ export function AppHeader({ notifications, leads, onMarkAllRead, onSelectNotific
               onSelectNotification(n);
               setIsOpen(false);
             }}
+            onMarkRead={onMarkRead}
+            onMarkUnread={onMarkUnread}
           />
         }
       >

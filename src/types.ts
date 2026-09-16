@@ -198,6 +198,7 @@ export type NotificationChannel = "inApp" | "email";
 export interface NotificationPrefDef {
   key: NotificationEventKey;
   label: string;
+  description?: string;
 }
 
 export type NotificationEventKey =

@@ -61,7 +61,11 @@ export function ApiKeysPage({ keys, onGenerate, onRevoke }: ApiKeysPageProps) {
               <td>
                 <code className="api-keys-page__key">{k.maskedKey}</code>
               </td>
-              <td>{k.scope}</td>
+              <td>
+                <Tag minimal intent={k.scope === "Read+Write" ? "warning" : "success"} round>
+                  {k.scope}
+                </Tag>
+              </td>
               <td>
                 <div className="api-keys-page__last-used">
                   <span>{formatLastUsed(k.lastUsed)}</span>

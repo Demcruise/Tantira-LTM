@@ -26,7 +26,12 @@ export function NotificationPreferencesPage({ matrix, onToggle }: NotificationPr
         <tbody>
           {NOTIFICATION_EVENTS.map((event) => (
             <tr key={event.key}>
-              <td>{event.label}</td>
+              <td>
+                <div className="notif-prefs-page__event-cell">
+                  <div className="notif-prefs-page__event-label">{event.label}</div>
+                  {event.description && <div className="notif-prefs-page__event-desc">{event.description}</div>}
+                </div>
+              </td>
               <td className="notif-prefs-page__cell">
                 <Checkbox
                   checked={matrix[event.key]?.inApp ?? false}

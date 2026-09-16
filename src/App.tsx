@@ -103,7 +103,7 @@ export function App() {
   const { assignmentRules, handleReorderRules, handleSaveRule, handleDeleteRule, handleDuplicateRule, handleToggleRuleStatus } = useAssignmentRules(logAction);
   const { scoringRules, tierThresholds, setTierThresholds, handleAddScoringRule, handleSaveScoringRule, handleDeleteScoringRule, handleToggleScoringRuleStatus, handleCommitThresholds } = useScoringRules(logAction, leads, setLeads);
   const { notifPrefs, handleToggleNotificationPref } = useNotificationPrefs();
-  const { notifications, addNotification, handleMarkAllNotificationsRead, handleSelectNotification } = useNotifications(
+  const { notifications, addNotification, handleMarkAllNotificationsRead, handleMarkRead, handleMarkUnread, handleSelectNotification } = useNotifications(
     (leadId) => setSelectedLeadId(leadId),
     (auditSearch) => {
       setAuditSearchSeed(auditSearch);
@@ -636,6 +636,8 @@ export function App() {
           leads={leads}
           onMarkAllRead={handleMarkAllNotificationsRead}
           onSelectNotification={handleSelectNotification}
+          onMarkRead={handleMarkRead}
+          onMarkUnread={handleMarkUnread}
           onToggleSidebar={() => setMobileSidebarOpen(true)}
         />
 
