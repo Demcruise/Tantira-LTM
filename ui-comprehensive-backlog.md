@@ -1,0 +1,67 @@
+# Comprehensive UI/UX Backlog v2
+
+Answers the 17-item request. Stack decision (confirmed): **adapt patterns to Blueprint.js + existing CSS — no shadcn/ui, radix-ui, @tanstack/react-table, framer-motion, or sonner added.** Those are the base of nearly every referenced 21st.dev snippet; adopting them literally would reintroduce the exact dependency the desloppify pass just removed as dead weight, and would run two design systems side by side. Every item below is re-expressed as "what to build with what we already have," not a port of the reference code.
+
+Verified this session by live DOM inspection (not guesses) — 3 new concrete bugs found, called out below.
+
+## New bugs found this session
+
+| # | Where | Bug | Fix |
+|---|-------|-----|-----|
+| N1 | `CommandCenterPage` "Where to go next" grid | ~~CSS uses `grid-template-columns: repeat(auto-fill, minmax(240px, 1fr))`. At 1920px that reserves 6 tracks; only 5 cards exist, so there's a visible empty phantom column.~~ **DONE** — `auto-fill`→`auto-fit` (`styles.css`). Verified: 5 cards now fill evenly (291.9px each), phantom track collapses to 0px. |
+| N2 | `MyLeadsPage` "Respond now" / "On track" rows (`work-card`) | ~~The primary action button and "Open →" link weren't in a fixed-width column, so "Open →" sat at a different x-position per row.~~ **DONE** — `.work-card__actions` given `min-width: 100px`. Verified: "Open" button now lands at identical x (1778.08px) on every row regardless of whether Respond/Qualify is present. |
+| N3 | `SsoPage` | ~~Content card is 640px wide sitting inside a ~1607px content area at 1920px, ~960px of dead space.~~ **DONE** — `.settings-page` capped at `max-width: 760px`. Verified: page now 760px, no longer stretching into dead space. |
+
+## Item-by-item (Blueprint-adapted)
+
+**1. Leads Table (All Leads)** — B1 already made it responsive. Remaining gap vs. the reference: no click-to-sort column headers. Blueprint `Table2`'s `ColumnHeaderCell` supports a custom click handler — add local sort state (column + direction) and re-sort `filteredLeads` before rendering, with a sort-direction icon in the header. Selection toolbar equivalent already exists (`BulkActionBar`).
+
+**2. Stat cards (KpiCard)** — current component is already icon+label+value in a bordered card, functionally equivalent to the reference. No structural gap; leave as-is unless a specific visual (spacing/type scale) complaint is named.
+
+**3. Command Center "Where to go next" row length** — this is bug N1. Fixing `auto-fill`→`auto-fit` makes the 5 cards fill the row width the callout above it already uses, so they end up visually matched without hardcoding a width relationship between two unrelated elements.
+
+**4. Attention Center row layout** — current rows already carry tag + name + reason badge + SLA badge + actions, which is the same information the reference's avatar-table shows. Apply the same fixed-width action-column treatment as N2 for consistency between the two "queue" pages (Attention Center and My Leads share a visual language already; this closes the last gap between them).
+
+**5. My Leads row precision** — bug N2 above.
+
+**6. All Leads table polish** — beyond B1's responsive columns, do a spacing/alignment pass: consistent cell vertical padding, right-align the SLA/score-shaped cells, confirm the checkbox column stays pixel-aligned with the select-all header at every breakpoint (already close; verify after N2/N1 land since they touch the same CSS file).
+
+**7. Inbound Sources table** — functionally fine (status tags, resolve actions); needs the same alignment pass as #6 rather than a structural rebuild — it's the same `HTMLTable`-based pattern as several other pages, no reference component fits its actual data shape (intake items with kind-specific resolution actions) any better than what exists.
+
+**8. Row-click detail → floating centered card with blurred backdrop, app-wide** — ~~real, valuable, and directly buildable: swap Blueprint `Drawer` (side panel) for Blueprint `Dialog` (centered, backdrop-dimmed modal) in `LeadDetailPanel.tsx` and anywhere else a row click opens a side drawer~~ **DONE** — `LeadDetailPanel.tsx` now uses Blueprint `Dialog` (centered, backdrop-dimmed) instead of `Drawer` (right-side panel). Dialog sized `min(90vw, 960px)` with `max-height: 70vh` + `overflow-y: auto` for content scrolling. Redundant topbar close button removed (Dialog provides its own header close X). `asFullPage` path unchanged. Verified: typecheck + build pass; clicking a lead row opens a centered floating card with backdrop dim; Esc closes it; "Open full view" still navigates to full-page view.
+
+**9. Performance → Lead Volume chart** — current charts (`FunnelChart`, `AccuracyTrendChart`) are hand-built SVG, not a charting library — there's no `recharts` dependency to swap into. If the actual complaint is visual (tooltip clarity, color, legend), that's a targeted polish pass on the existing SVG component, not a library swap. Needs a specific "what looks wrong" before scoping further — flagging as needs-clarification rather than guessing.
+
+**10. Workflow Builder — two asks:**
+   - ~~Stepper (Draft/Test/Validate/Publish/Monitor) should stretch to fill its card's width — CSS-only, give each segment `flex: 1` instead of its current intrinsic width.~~ **DONE** — `.wf-lifecycle__step` given `flex: 1` + `text-align: center`, `.wf-lifecycle__steps` given `width: 100%`. Verified: 5 segments now stretch evenly across the full card width at 1920/1440/1024px.
+   - 9-button toolbar should collapse overflow into a "···" menu (Blueprint `Popover` + `Menu`) instead of wrapping to a second row. This needs the same "measure container, decide what fits" approach already built for the responsive leads table (`useMeasuredWidth`-style hook) — real effort, not a one-liner, but a proven pattern to reuse.
+
+**11. API Keys page** — current page already has generate/revoke with a confirm dialog. Gap vs. reference: no scope badges shown per key, and needs confirming whether a freshly-generated secret is shown once with a copy button (the reference's best idea, and copy-able onto our stack with a Blueprint `Callout` + `Tag` + a `navigator.clipboard` copy button — no new dependency needed). Needs a quick look at the current page before scoping the exact diff.
+
+**12. Team Members page** — reference's real value-adds: avatar chips, status badges, bulk-select toolbar. All buildable with existing patterns: initials-avatar chip (same visual as the sidebar's "RC" user chip), Blueprint `Tag` for status, and the same checkbox+`BulkActionBar` pattern already proven on the Leads table. Genuine "bring it up to the same standard as the Leads table" task — moderate effort, high consistency payoff.
+
+**13. Roles & Permissions layout** — the reference component (contributors-per-project with avatar stacks) doesn't actually match this page's data shape, which is a permission×role matrix, not a per-project staff list. Recommend keeping the matrix (it's the right structure for the data) and instead polishing it: sticky column headers, tighter zebra striping — the module grouping already exists. Flagging the literal reference as a mismatch rather than forcing it.
+
+**14. SSO page max-width** — bug N3 above.
+
+**15. Notification bell panel** — current `NotificationsPanel` is a flat list with mark-read. Reference's valuable pieces (tabs, per-row menu, resolved-action state) partially apply: add an All/Unread tab filter with Blueprint `Tabs`, and a per-row overflow menu (`Popover`+`Menu`) for mark read/unread. The reference's "Following"/"Archived" concepts don't exist in the current notification data model (`AppNotification` type) — adding them is a data-model change, not just UI, so scope those out unless wanted.
+
+**16. Notification Preferences page** — current page is already a channel×event checkbox grid (`notifPrefs` matrix via `NotificationPreferencesPage`), structurally the same idea as the reference. Likely a visual-polish pass (spacing, header treatment) rather than a rebuild — confirm current look before over-scoping.
+
+**17. General gap analysis** (this section):
+- **Text wrapping / overflow bugs**: DOM-swept Attention Center, Command Center, My Leads, SSO, Leads Table, Workflow Builder at 1920 and 1024px — zero raw overflow found beyond N1–N3 above (which are layout gaps, not text clipping). A few pages (Inbound Sources, API Keys, Team Members, Roles & Permissions, Notification Preferences) weren't DOM-swept this pass — reasonable to assume similar health given they share the same `HTMLTable`/`Card` patterns already verified elsewhere, but flagging as not literally checked.
+- **UX writing**: covered in the first pass ([ui-polish-backlog.md](ui-polish-backlog.md), items A1–A4) — Workflow Builder jargon and Writeback→CRM Sync wording already fixed. Nothing newly jargon-heavy spotted this pass; "Sync Issues", "Automated (7d)" and similar KPI labels read fine as short data labels, not prose.
+- **Component-length / row consistency**: N1 and N2 are the concrete finds. Broader pattern worth adopting: the Leads Table, My Leads, and Attention Center are the three "row of things" pages — worth eventually sharing one row-layout convention (fixed action-column width) instead of each having grown it independently.
+- **Cross-device breakpoints**: B1 (table), B2 (drawer), B3 (sidebar) each hand-picked their own breakpoint numbers (650–1366px) directly in their component files — works, but there's no single source of truth for "what counts as a laptop-width screen" if a fourth component needs to make the same call. **Suggested small follow-up**: extract shared constants (e.g. `src/lib/breakpoints.ts` with `LAPTOP_WIDTH = 1366` etc.) so future responsive work references one definition instead of re-guessing a number.
+
+## Suggested sequencing
+
+1. ~~N1, N2, N3~~ **DONE** — all three fixed and verified live.
+2. ~~#10a (stepper stretch)~~ **DONE** — `flex: 1` on `.wf-lifecycle__step`, stretches full width.
+3. ~~#8 (Drawer→Dialog)~~ **DONE** — LeadDetailPanel now uses centered Dialog with backdrop.
+4. #12 (Team Members) — clear scope, reuses proven patterns (avatar chip, bulk toolbar).
+5. #1 (sortable columns), #10b (toolbar overflow menu) — both need the "measure + decide" pattern; do together.
+6. #11, #15, #16 — each needs a quick look at current state before finalizing scope; small-to-medium once scoped.
+7. #6, #7, #13 — polish-only, lowest urgency.
+8. #9 — blocked on clarifying what "wrong" means before scoping.
+9. Breakpoint constants extraction — do opportunistically alongside #1/#10b since that's where the next breakpoint decision would get made anyway.

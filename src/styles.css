@@ -4009,15 +4009,18 @@ body {
   display: flex;
   align-items: center;
   gap: 0;
+  width: 100%;
 }
 
 .wf-lifecycle__step {
   position: relative;
+  flex: 1;
   padding: 3px 14px 3px 20px;
   font-size: 11.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+  text-align: center;
   color: #8a9ba8;
   background: #f6f7f9;
   clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
@@ -5911,4 +5914,18 @@ textarea.wf-node-code {
 }
 .table-scroll-wrap .bp5-html-table {
   width: 100%;
+}
+
+/* ── Lead detail centered dialog (was right-side Drawer) ── */
+.lead-detail-dialog {
+  max-width: 960px;
+  width: min(90vw, 960px);
+  padding: 0;
+}
+.lead-detail-dialog .bp5-dialog-body {
+  padding: 0;
+}
+.lead-detail-dialog .lead-detail {
+  max-height: 70vh;
+  overflow-y: auto;
 }

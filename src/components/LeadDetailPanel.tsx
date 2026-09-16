@@ -1,4 +1,4 @@
-import { Button, Drawer, Icon, Tag } from "@blueprintjs/core";
+import { Button, Classes, Dialog, Icon, Tag } from "@blueprintjs/core";
 import type { ActivityChannel, ConflictResolution, Lead, LeadActionType, Outcome, OverrideReason, ScoringRule, SyncConflict } from "../types";
 import { getRepLoad } from "../lib/capacity";
 import { priorityConfidence } from "../lib/scoring";
@@ -83,7 +83,7 @@ export function LeadDetailPanel({
   asFullPage = false,
 }: LeadDetailPanelProps) {
   if (!lead) {
-    return asFullPage ? null : <Drawer isOpen={false} onClose={onClose} />;
+    return asFullPage ? null : <Dialog isOpen={false} onClose={onClose} />;
   }
 
   const confidence = priorityConfidence(lead.score);
@@ -127,7 +127,6 @@ export function LeadDetailPanel({
           {!asFullPage && (
             <Button minimal small icon="fullscreen" text="Open full view" onClick={() => onOpenFullView(lead.id)} />
           )}
-          {!asFullPage && <Button minimal small icon="cross" onClick={onClose} />}
         </div>
       </div>
 
@@ -210,8 +209,15 @@ export function LeadDetailPanel({
   }
 
   return (
-    <Drawer isOpen={lead !== null} onClose={onClose} size="clamp(420px, 38vw, 640px)" position="right">
-      {content}
-    </Drawer>
+    <Dialog
+      isOpen={lead !== null}
+      onClose={onClose}
+      className="lead-detail-dialog"
+      style={{ width: "min(90vw, 960px)" }}
+    >
+      <div className={Classes.DIALOG_BODY}>
+        {content}
+      </div>
+    </Dialog>
   );
 }
