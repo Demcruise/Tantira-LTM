@@ -6,3 +6,17 @@ dist
 .env
 .env.*
 !.env.example
+
+# Build artifacts
+tsconfig.tsbuildinfo
+
+# AI/agent tooling
+.claude/
+.codex/
+src/.claude/
+
+# Scorecard
+scorecard.png
+
+# Local docs/notes
+summary.md
