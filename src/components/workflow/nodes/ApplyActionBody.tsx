@@ -1,5 +1,5 @@
 import { HTMLSelect, Icon, InputGroup } from "@blueprintjs/core";
-import { ACTION_DEFS, ACTION_NAMES, defaultActionParams, type ApplyActionNode } from "../../../lib/workflowNodes";
+import { ACTION_DEFS, ACTION_NAMES, defaultActionParams, type ActionName, type ApplyActionNode } from "../../../lib/workflowNodes";
 import { NodeField } from "./NodeField";
 import { VariableInsert } from "./VariableInsert";
 
@@ -15,7 +15,7 @@ export function ApplyActionBody({ node, variables, onChange }: Props) {
   return (
     <>
       <NodeField label="Action" required hint="Registered Ontology actions only.">
-        <HTMLSelect fill value={node.action} onChange={(e) => onChange({ action: e.target.value, params: defaultActionParams(e.target.value) })}>
+        <HTMLSelect fill value={node.action} onChange={(e) => { const action = e.target.value as ActionName; onChange({ action, params: defaultActionParams(action) }); }}>
           {ACTION_NAMES.map((a) => (
             <option key={a} value={a}>
               {a}

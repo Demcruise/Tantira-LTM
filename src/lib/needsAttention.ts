@@ -58,26 +58,6 @@ export interface NeedsAttentionLead {
   reason: AttentionReason;
 }
 
-export interface AttentionTier {
-  priority: Priority;
-  items: NeedsAttentionLead[];
-}
-
 export function countNeedsAttention(leads: Lead[]): number {
   return leads.filter((lead) => lead.status !== "Lost" && computeReason(lead, leads) !== null).length;
-}
-
-export function buildNeedsAttention(leads: Lead[]): AttentionTier[] {
-  const flagged: NeedsAttentionLead[] = [];
-  for (const lead of leads) {
-    if (lead.status === "Lost") continue;
-    const reason = computeReason(lead, leads);
-    if (reason) flagged.push({ lead, reason });
-  }
-
-  const order: Priority[] = ["Hot", "Warm", "Cold"];
-  return order.map((priority) => ({
-    priority,
-    items: flagged.filter((f) => f.lead.priority === priority),
-  }));
 }

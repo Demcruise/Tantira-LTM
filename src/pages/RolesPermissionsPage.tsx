@@ -35,7 +35,7 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
       <PageHeader
         section="Govern"
         title="Roles & Permissions"
-        description="What each role can see and do. Changes apply to members immediately."
+        description="What each role can see and do. Enforced live in the nav — a role without a permission below has that area hidden entirely, including this page."
         actions={<Button intent="primary" icon="add" text="Create custom role" onClick={() => setCreateOpen(true)} />}
       />
 
@@ -103,7 +103,7 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
         title="Revoke permission"
         description={`Remove "${revokePerm?.module}: ${revokePerm?.label}" from ${revokeRole?.name}? Members with this role will lose access immediately.`}
         confirmText="Revoke"
-        onCancel={() => setPendingRevoke(null)}
+        onClose={() => setPendingRevoke(null)}
         onConfirm={() => {
           if (pendingRevoke) onTogglePermission(pendingRevoke.roleId, pendingRevoke.permKey, false);
           setPendingRevoke(null);
@@ -115,7 +115,7 @@ export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCrea
         title="Delete role"
         description={`Delete the "${pendingDeleteRole?.name}" role? Members assigned to it will need to be reassigned.`}
         confirmText="Delete role"
-        onCancel={() => setPendingDeleteRole(null)}
+        onClose={() => setPendingDeleteRole(null)}
         onConfirm={() => {
           if (pendingDeleteRole) onDeleteRole(pendingDeleteRole.id);
           setPendingDeleteRole(null);

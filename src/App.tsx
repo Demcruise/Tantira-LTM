@@ -37,7 +37,7 @@ import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
 import { REPS } from "./data/reps";
 import { CURRENT_USER, INITIAL_TEAM } from "./data/team";
-import { INITIAL_MATRIX, INITIAL_ROLES, PERMISSIONS, type PermissionMatrix, type RoleDef } from "./data/permissions";
+import { hasPermission, INITIAL_MATRIX, INITIAL_ROLES, PERMISSIONS, resolveRoleId, type PermissionKey, type PermissionMatrix, type RoleDef } from "./data/permissions";
 import { INITIAL_SSO_CONFIG } from "./data/sso";
 import { INITIAL_API_KEYS, generateApiKey } from "./data/apiKeys";
 import { SEED_NOTIFICATIONS } from "./data/notifications";
@@ -160,6 +160,12 @@ export function App() {
   }, [selectedLead, connections]);
 
   const autoProcessedLog = useMemo(() => buildAutoProcessedLog(leads), [leads]);
+
+  const currentUserPermissions = useMemo(() => {
+    const roleName = members.find((m) => m.name === CURRENT_USER)?.role;
+    const roleId = roleName ? resolveRoleId(roles, roleName) : undefined;
+    return new Set<PermissionKey>(PERMISSIONS.filter((p) => hasPermission(matrix, roleId, p.key)).map((p) => p.key));
+  }, [members, roles, matrix]);
 
   const selectedRecommendation = useMemo(
     () => (selectedLead ? recommendFor(selectedLead, leads, assignmentRules, tierThresholds) : null),
@@ -443,7 +449,6 @@ export function App() {
   }
 
   function handleBulkAction(action: BulkAction) {
-    const ids = [...checkedLeadIds];
     const targets = leads.filter((l) => checkedLeadIds.has(l.id));
     if (targets.length === 0) return;
     const names = targets.map((l) => l.name).join(", ");
@@ -501,7 +506,6 @@ export function App() {
       }
     }
     if (action.type !== "export") setCheckedLeadIds(new Set());
-    void ids;
   }
 
   function handleAutoAssignUnassigned() {
@@ -878,6 +882,7 @@ export function App() {
           activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
           onNavigate={navigateTo}
           onLogout={handleLogout}
+          permissions={currentUserPermissions}
         />
       </div>
 
@@ -920,7 +925,7 @@ export function App() {
             loading={loading}
             selectedId={selectedLeadId}
             checkedIds={checkedLeadIds}
-            onSelect={(lead) => setSelectedLeadId(lead.id)}
+            onOpenLead={(leadId) => setSelectedLeadId(leadId)}
             onToggleChecked={(leadId) =>
               setCheckedLeadIds((prev) => {
                 const next = new Set(prev);
@@ -954,7 +959,7 @@ export function App() {
             processedThisWeek={processedThisWeek}
             intakeUnresolved={intakeItems.length}
             onOpenLead={(leadId) => setSelectedLeadId(leadId)}
-            onChangeView={navigateTo}
+            onNavigate={navigateTo}
             onRetrySync={handleRetrySync}
             onLeadAction={handleLeadAction}
           />
@@ -1041,7 +1046,7 @@ export function App() {
 
       {view === "auto-processed-log" && (
         <main className="app-main">
-          <AutoProcessedLogPage entries={autoProcessedLog} onSelectLead={handleOpenLeadFromLog} onChangeView={navigateTo} initialSearch={autoLogSearchSeed} />
+          <AutoProcessedLogPage entries={autoProcessedLog} onOpenLead={handleOpenLeadFromLog} onNavigate={navigateTo} initialSearch={autoLogSearchSeed} />
         </main>
       )}
 

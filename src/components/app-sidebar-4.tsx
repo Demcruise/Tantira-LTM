@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Plug, Search, Settings, Shield, SlidersHorizontal, Workflow } from "lucide-react";
 import type { LeadStatus, Priority } from "../types";
+import type { PermissionKey } from "../data/permissions";
 
 const cx = (...c: (string | false | null | undefined)[]) =>
   c.filter(Boolean).join(" ");
@@ -73,6 +74,7 @@ interface NavItem {
   label: string;
   view?: AppView;
   filterPreset?: FilterPreset;
+  requiredPermission?: PermissionKey;
 }
 
 interface NavGroup {
@@ -95,10 +97,10 @@ const sections: NavSection[] = [
       {
         label: "Work",
         items: [
-          { label: "Command Center", view: "command-center" },
-          { label: "Attention Center", view: "needs-attention" },
-          { label: "My Leads", view: "my-leads" },
-          { label: "All Leads", view: "dashboard", filterPreset: {} },
+          { label: "Command Center", view: "command-center", requiredPermission: "leads.view" },
+          { label: "Attention Center", view: "needs-attention", requiredPermission: "leads.view" },
+          { label: "My Leads", view: "my-leads", requiredPermission: "leads.view" },
+          { label: "All Leads", view: "dashboard", filterPreset: {}, requiredPermission: "leads.view" },
         ],
       },
       { label: "Intake", items: [{ label: "Inbound Sources", view: "intake" }] },
@@ -112,20 +114,20 @@ const sections: NavSection[] = [
       {
         label: "Routing",
         items: [
-          { label: "Assignment & SLA", view: "assignment" },
-          { label: "Assignment Rules", view: "assignment-rules" },
+          { label: "Assignment & SLA", view: "assignment", requiredPermission: "leads.assign" },
+          { label: "Assignment Rules", view: "assignment-rules", requiredPermission: "automation.view" },
         ],
       },
-      { label: "Scoring", items: [{ label: "Prioritization Model", view: "prioritization-model" }] },
-      { label: "Outcomes", items: [{ label: "Performance", view: "performance" }] },
+      { label: "Scoring", items: [{ label: "Prioritization Model", view: "prioritization-model", requiredPermission: "automation.view" }] },
+      { label: "Outcomes", items: [{ label: "Performance", view: "performance", requiredPermission: "analytics.view" }] },
     ],
   },
   {
     label: "Automate",
     icon: Workflow,
     groups: [
-      { label: "Build", items: [{ label: "Lead Triage Workflow", view: "workflow" }] },
-      { label: "Monitor", items: [{ label: "Pipeline Health", view: "pipeline" }] },
+      { label: "Build", items: [{ label: "Lead Triage Workflow", view: "workflow", requiredPermission: "automation.edit" }] },
+      { label: "Monitor", items: [{ label: "Pipeline Health", view: "pipeline", requiredPermission: "automation.view" }] },
     ],
   },
   {
@@ -133,7 +135,7 @@ const sections: NavSection[] = [
     icon: Plug,
     groups: [
       { label: "Integrations", items: [{ label: "Connections", view: "connections" }] },
-      { label: "Access", items: [{ label: "API Keys", view: "api-keys" }] },
+      { label: "Access", items: [{ label: "API Keys", view: "api-keys", requiredPermission: "org.manage" }] },
     ],
   },
   {
@@ -143,16 +145,16 @@ const sections: NavSection[] = [
       {
         label: "Team",
         items: [
-          { label: "Members", view: "team-members" },
-          { label: "Roles & Permissions", view: "roles-permissions" },
+          { label: "Members", view: "team-members", requiredPermission: "org.manage" },
+          { label: "Roles & Permissions", view: "roles-permissions", requiredPermission: "org.manage" },
         ],
       },
-      { label: "Security", items: [{ label: "SSO", view: "sso" }] },
+      { label: "Security", items: [{ label: "SSO", view: "sso", requiredPermission: "org.manage" }] },
       {
         label: "Records",
         items: [
-          { label: "Approvals", view: "approvals" },
-          { label: "Audit Log", view: "audit-log" },
+          { label: "Approvals", view: "approvals", requiredPermission: "leads.view" },
+          { label: "Audit Log", view: "audit-log", requiredPermission: "audit.view" },
           { label: "Notification Preferences", view: "notification-preferences" },
         ],
       },
@@ -165,13 +167,32 @@ interface AppSidebar4Props {
   activeFilters?: FilterPreset;
   onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
   onLogout?: () => void;
+  /** Permission keys granted to the signed-in user's role. An item with a
+   * `requiredPermission` not present here is hidden from the nav entirely —
+   * this mirrors the Roles & Permissions matrix, so a role change actually
+   * changes what shows up here. Items without `requiredPermission` are
+   * visible to everyone (no corresponding entry exists in the matrix yet). */
+  permissions?: Set<PermissionKey>;
 }
 
-export default function AppSidebar4({ activeView, activeFilters, onNavigate, onLogout }: AppSidebar4Props) {
-  const initialSectionIndex = sections.findIndex((s) => s.groups.some((g) => g.items.some((i) => i.view === activeView)));
+export default function AppSidebar4({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebar4Props) {
+  function isItemVisible(item: NavItem): boolean {
+    return !item.requiredPermission || (permissions?.has(item.requiredPermission) ?? true);
+  }
+
+  const visibleSections = sections
+    .map((s) => ({
+      ...s,
+      groups: s.groups
+        .map((g) => ({ ...g, items: g.items.filter(isItemVisible) }))
+        .filter((g) => g.items.length > 0),
+    }))
+    .filter((s) => s.groups.length > 0);
+
+  const initialSectionIndex = visibleSections.findIndex((s) => s.groups.some((g) => g.items.some((i) => i.view === activeView)));
   const [sectionIndex, setSectionIndex] = useState(Math.max(initialSectionIndex, 0));
   const [collapsed, setCollapsed] = useState(false);
-  const section = sections[sectionIndex];
+  const section = visibleSections[Math.min(sectionIndex, visibleSections.length - 1)];
 
   function isItemActive(item: NavItem): boolean {
     if (item.view !== activeView) return false;
@@ -200,7 +221,7 @@ export default function AppSidebar4({ activeView, activeFilters, onNavigate, onL
             aria-label="Sections"
             className="flex h-full flex-col items-center gap-1 overflow-y-auto pb-3"
           >
-            {sections.map((s, i) => {
+            {visibleSections.map((s, i) => {
               const Icon = s.icon;
               const current = i === sectionIndex;
               return (

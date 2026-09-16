@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Card, H4, Icon } from "@blueprintjs/core";
 import type { AutoProcessedEntry, Lead } from "../types";
 import type { AppView, FilterPreset } from "../components/app-sidebar-4";
+import { relativeTime } from "../lib/relativeTime";
 import { FunnelChart } from "../components/pipeline/FunnelChart";
 import { AccuracyTrendChart } from "../components/pipeline/AccuracyTrendChart";
 import { WorkflowRunInspectorDialog } from "../components/pipeline/WorkflowRunInspectorDialog";
@@ -35,14 +36,6 @@ function buildRecentRuns(entries: AutoProcessedEntry[]): RecentRun[] {
     }
   }
   return [...byLead.values()].sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime()).slice(0, 6);
-}
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
 }
 
 export function PipelineHealthPage({ leads, autoProcessedLog, onNavigate }: PipelineHealthPageProps) {

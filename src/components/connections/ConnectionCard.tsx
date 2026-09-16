@@ -1,6 +1,7 @@
 import { Button, Card, Icon, Tag } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
 import type { ConnectionStatus, CrmConnection } from "../../types";
+import { relativeTime } from "../../lib/relativeTime";
 
 const STATUS_CONFIG: Record<ConnectionStatus, { label: string; intent: "success" | "warning" | "danger"; icon: "tick-circle" | "warning-sign" | "offline" }> = {
   healthy: { label: "Healthy", intent: "success", icon: "tick-circle" },
@@ -13,16 +14,6 @@ const PROVIDER_ICON: Record<string, IconName> = {
   hubspot: "diagram-tree",
   monday: "grid-view",
 };
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / (1000 * 60));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  return `${days} day${days > 1 ? "s" : ""} ago`;
-}
 
 interface ConnectionCardProps {
   connection: CrmConnection;

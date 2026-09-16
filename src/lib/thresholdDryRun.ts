@@ -18,7 +18,7 @@ export interface TierOutcomeRow {
   wonRate: number;
 }
 
-export interface DryRunResult {
+export interface ThresholdDryRunResult {
   moves: TierMove[];
   upgrades: number;
   downgrades: number;
@@ -36,7 +36,7 @@ function wonRateByTier(leads: Lead[], tierOf: (lead: Lead) => Priority): TierOut
 
 // Compares every lead's live tier against what it would be under draft thresholds,
 // without touching any lead — a preview, not a re-tier.
-export function runThresholdDryRun(leads: Lead[], draftThresholds: TierThresholds): DryRunResult {
+export function runThresholdDryRun(leads: Lead[], draftThresholds: TierThresholds): ThresholdDryRunResult {
   const moves: TierMove[] = [];
   for (const lead of leads) {
     const simulatedTier = scoreToPriority(lead.score, draftThresholds);

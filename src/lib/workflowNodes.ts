@@ -40,13 +40,13 @@ export interface UseLlmNode extends NodeBase {
 
 export interface ApplyActionNode extends NodeBase {
   kind: "apply-action";
-  action: string;
+  action: ActionName;
   params: Record<string, string>;
 }
 
 export interface ExecuteNode extends NodeBase {
   kind: "execute";
-  fn: string;
+  fn: FunctionName;
   inputs: Record<string, string>;
   outputVar: string;
   timeout: string;
@@ -224,7 +224,7 @@ export interface ActionDef {
 
 const LEAD_PARAM: ActionParamDef = { key: "lead", label: "Lead", required: true, defaultValue: "Trigger.Lead" };
 
-export const ACTION_DEFS: Record<string, ActionDef> = {
+export const ACTION_DEFS = {
   "Enrich Lead": {
     params: [LEAD_PARAM, { key: "source", label: "Enrichment Source", defaultValue: "Clearbit API" }],
     writes: ["Lead.company", "Lead.accountMatch"],
@@ -245,15 +245,17 @@ export const ACTION_DEFS: Record<string, ActionDef> = {
     params: [LEAD_PARAM, { key: "outcome", label: "Outcome", defaultValue: "Won" }],
     writes: ["Lead.outcome"],
   },
-};
+} satisfies Record<string, ActionDef>;
 
-export const ACTION_NAMES = Object.keys(ACTION_DEFS);
+export type ActionName = keyof typeof ACTION_DEFS;
+
+export const ACTION_NAMES = Object.keys(ACTION_DEFS) as ActionName[];
 
 export interface FunctionDef {
   inputs: { key: string; defaultValue: string }[];
 }
 
-export const FUNCTION_DEFS: Record<string, FunctionDef> = {
+export const FUNCTION_DEFS = {
   calculateTerritoryMatch: {
     inputs: [
       { key: "leadRegion", defaultValue: "Trigger.Lead.region" },
@@ -267,15 +269,17 @@ export const FUNCTION_DEFS: Record<string, FunctionDef> = {
       { key: "source", defaultValue: "Trigger.Lead.source" },
     ],
   },
-};
+} satisfies Record<string, FunctionDef>;
 
-export const FUNCTION_NAMES = Object.keys(FUNCTION_DEFS);
+export type FunctionName = keyof typeof FUNCTION_DEFS;
 
-export function defaultActionParams(action: string): Record<string, string> {
+export const FUNCTION_NAMES = Object.keys(FUNCTION_DEFS) as FunctionName[];
+
+export function defaultActionParams(action: ActionName): Record<string, string> {
   return Object.fromEntries(ACTION_DEFS[action].params.map((p) => [p.key, p.defaultValue]));
 }
 
-export function defaultFunctionInputs(fn: string): Record<string, string> {
+export function defaultFunctionInputs(fn: FunctionName): Record<string, string> {
   return Object.fromEntries(FUNCTION_DEFS[fn].inputs.map((i) => [i.key, i.defaultValue]));
 }
 
@@ -329,6 +333,10 @@ export function createNode(kind: NodeKind): WorkflowNode {
       return { id, kind, hours: 24, until: "a reply from the lead" };
     case "end":
       return { id, kind, result: "complete" };
+    default: {
+      const _exhaustive: never = kind;
+      throw new Error(`Unhandled node kind: ${_exhaustive}`);
+    }
   }
 }
 

@@ -315,7 +315,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
           setIssues(null);
           setTestedSinceChange(false);
         }}
-        onCancel={() => setConfirm(null)}
+        onClose={() => setConfirm(null)}
       />
       <ConfirmDialog
         isOpen={confirm === "rollback"}
@@ -328,7 +328,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
           setIssues(null);
           setTestedSinceChange(false);
         }}
-        onCancel={() => setConfirm(null)}
+        onClose={() => setConfirm(null)}
       />
     </div>
   );

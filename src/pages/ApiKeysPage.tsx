@@ -87,7 +87,7 @@ export function ApiKeysPage({ keys, onGenerate, onRevoke }: ApiKeysPageProps) {
         title="Revoke API key"
         description={`Revoke "${revokeTarget?.name}"? Any integration using this key will immediately lose access. This cannot be undone.`}
         confirmText="Revoke key"
-        onCancel={() => setRevokeTarget(null)}
+        onClose={() => setRevokeTarget(null)}
         onConfirm={() => {
           if (revokeTarget) onRevoke(revokeTarget.id);
           setRevokeTarget(null);

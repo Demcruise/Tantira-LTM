@@ -243,7 +243,7 @@ export function SsoPage({ config, onSelectProvider, onSaveMetadata, onSaveAttrib
         title="Enable SSO"
         description="All users will be required to log in via SSO going forward. Make sure every active member can authenticate through your identity provider before continuing."
         confirmText="Enable SSO"
-        onCancel={() => setConfirmEnableOpen(false)}
+        onClose={() => setConfirmEnableOpen(false)}
         onConfirm={() => {
           onEnable();
           setConfirmEnableOpen(false);

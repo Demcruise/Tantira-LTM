@@ -1,11 +1,5 @@
-import type { Priority, ScoringRule, SimulationResult, TierThresholds } from "../types";
-import { clampScore } from "./scoring";
-
-export function tierForScore(score: number, thresholds: TierThresholds): Priority {
-  if (score >= thresholds.hotMin) return "Hot";
-  if (score >= thresholds.warmMin) return "Warm";
-  return "Cold";
-}
+import type { ScoringRule, SimulationResult, TierThresholds } from "../types";
+import { clampScore, scoreToPriority } from "./scoring";
 
 export function runSimulation(
   appliedRuleIds: Set<string>,
@@ -22,7 +16,7 @@ export function runSimulation(
   return {
     totalScore,
     breakdown,
-    resultingTier: tierForScore(totalScore, thresholds),
+    resultingTier: scoreToPriority(totalScore, thresholds),
   };
 }
 
@@ -41,7 +35,7 @@ export function computeDistribution(scores: number[], thresholds: TierThresholds
   let warm = 0;
   let cold = 0;
   for (const s of scores) {
-    const tier = tierForScore(s, thresholds);
+    const tier = scoreToPriority(s, thresholds);
     if (tier === "Hot") hot++;
     else if (tier === "Warm") warm++;
     else cold++;

@@ -28,17 +28,16 @@ export const EVENT_LABEL: Record<AutoProcessedEventType, string> = {
   downstream: "Downstream step",
 };
 
-let counter = 0;
-
-function entry(lead: Lead, eventType: AutoProcessedEventType, time: string, label: string, detail?: string): AutoProcessedEntry {
-  counter += 1;
-  return { id: `AP-${counter}`, leadId: lead.id, leadName: lead.name, time, eventType, label, detail };
-}
-
 // Only events the system performed on its own — human-initiated actions (manual
 // assignment, outcome logging) live in the platform Audit Log instead. This is the
 // "did the automation actually run" trust feed, not a who-did-what record.
 export function buildAutoProcessedLog(leads: Lead[]): AutoProcessedEntry[] {
+  let counter = 0;
+  function entry(lead: Lead, eventType: AutoProcessedEventType, time: string, label: string, detail?: string): AutoProcessedEntry {
+    counter += 1;
+    return { id: `AP-${counter}`, leadId: lead.id, leadName: lead.name, time, eventType, label, detail };
+  }
+
   const entries: AutoProcessedEntry[] = [];
 
   for (const lead of leads) {

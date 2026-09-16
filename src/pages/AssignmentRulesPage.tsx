@@ -132,7 +132,7 @@ export function AssignmentRulesPage({ rules, leads, onAutoAssign, onReorder, onS
         title="Delete rule"
         description={`Delete Rule #${deleteTarget?.priority}? Leads that would have matched it will fall through to the next rule.`}
         confirmText="Delete rule"
-        onCancel={() => setDeleteTarget(null)}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={() => {
           if (deleteTarget) onDeleteRule(deleteTarget.id);
           setDeleteTarget(null);
@@ -144,7 +144,7 @@ export function AssignmentRulesPage({ rules, leads, onAutoAssign, onReorder, onS
         title="Deactivate last active rule"
         description="This is the only active rule besides the catch-all. Deactivating it means every lead will fall through to the catch-all rule."
         confirmText="Deactivate anyway"
-        onCancel={() => setDeactivateTarget(null)}
+        onClose={() => setDeactivateTarget(null)}
         onConfirm={() => {
           if (deactivateTarget) onToggleStatus(deactivateTarget.id);
           setDeactivateTarget(null);

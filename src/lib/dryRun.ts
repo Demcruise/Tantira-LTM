@@ -77,6 +77,10 @@ function simulateNode(node: WorkflowNode, lead: Lead): { status: NodeStatus; det
       return { status: "pass", detail: `Workflow ends here: ${node.result === "complete" ? "Complete" : node.result === "nurture" ? "Send to nurture" : "Drop"}` };
     case "condition":
       return { status: "pass", detail: "" }; // handled by the walker
+    default: {
+      const _exhaustive: never = node;
+      throw new Error(`Unhandled node kind: ${(_exhaustive as WorkflowNode).kind}`);
+    }
   }
 }
 

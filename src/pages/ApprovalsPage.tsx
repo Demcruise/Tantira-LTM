@@ -1,20 +1,13 @@
 import { Button, Card, HTMLTable, NonIdealState, Tag } from "@blueprintjs/core";
 import type { Lead } from "../types";
 import { PageHeader } from "../components/PageHeader";
+import { relativeTime } from "../lib/relativeTime";
 
 interface ApprovalsPageProps {
   leads: Lead[];
   acknowledgedIds: Set<string>;
   onAcknowledge: (leadId: string) => void;
   onOpenLead: (leadId: string) => void;
-}
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
 }
 
 export function ApprovalsPage({ leads, acknowledgedIds, onAcknowledge, onOpenLead }: ApprovalsPageProps) {

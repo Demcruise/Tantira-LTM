@@ -35,12 +35,12 @@ function eventIntentColor(type: AutoProcessedEventType): string {
 
 interface AutoProcessedLogPageProps {
   entries: AutoProcessedEntry[];
-  onSelectLead: (leadId: string) => void;
-  onChangeView: (view: AppView) => void;
+  onOpenLead: (leadId: string) => void;
+  onNavigate: (view: AppView) => void;
   initialSearch?: string;
 }
 
-export function AutoProcessedLogPage({ entries, onSelectLead, onChangeView, initialSearch }: AutoProcessedLogPageProps) {
+export function AutoProcessedLogPage({ entries, onOpenLead, onNavigate, initialSearch }: AutoProcessedLogPageProps) {
   const [search, setSearch] = useState(initialSearch ?? "");
   const [range, setRange] = useState<DateRange>("7d");
   const [eventType, setEventType] = useState<"All" | AutoProcessedEventType>("All");
@@ -65,7 +65,7 @@ export function AutoProcessedLogPage({ entries, onSelectLead, onChangeView, init
         section="Operate"
         title="Auto-Processed Log"
         description="What the automation did on its own — no human action here."
-        tabs={<LeadsAreaTabs current="auto-processed-log" onChange={onChangeView} />}
+        tabs={<LeadsAreaTabs current="auto-processed-log" onChange={onNavigate} />}
       />
 
       <Card className="page-card">
@@ -105,7 +105,7 @@ export function AutoProcessedLogPage({ entries, onSelectLead, onChangeView, init
         </thead>
         <tbody>
           {filtered.map((e) => (
-            <tr key={e.id} onClick={() => onSelectLead(e.leadId)}>
+            <tr key={e.id} onClick={() => onOpenLead(e.leadId)}>
               <td className="audit-log-page__time">{formatTimestamp(e.time)}</td>
               <td>
                 <Tooltip content="Open this lead">

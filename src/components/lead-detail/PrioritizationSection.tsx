@@ -4,13 +4,12 @@ import type { Lead, ScoringRule } from "../../types";
 import { PriorityTag } from "../Tags";
 import { ConfidenceMeter } from "../ConfidenceMeter";
 import { explainScore } from "../../lib/scoreExplanation";
-import { tierForScore } from "../../lib/scoringSimulation";
-import { DEFAULT_THRESHOLDS } from "../../lib/scoring";
+import { DEFAULT_THRESHOLDS, scoreToPriority } from "../../lib/scoring";
 
 export function PrioritizationSection({ lead, confidence, rules }: { lead: Lead; confidence: number; rules: ScoringRule[] }) {
   const [open, setOpen] = useState(false);
   const explanation = explainScore(lead, rules);
-  const computedTier = tierForScore(explanation.computedScore, DEFAULT_THRESHOLDS);
+  const computedTier = scoreToPriority(explanation.computedScore, DEFAULT_THRESHOLDS);
   const matchedRows = explanation.breakdown.filter((b) => b.matched === true);
   const diverges = computedTier !== lead.priority;
 

@@ -3,16 +3,7 @@ import type { AppNotification, Lead } from "../../types";
 import { ReasonBadge } from "../needs-attention/ReasonBadge";
 import { PriorityTag } from "../Tags";
 import { SlaBadge } from "../SlaBadge";
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / (1000 * 60));
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.round(hours / 24);
-  return `${days}d ago`;
-}
+import { relativeTime } from "../../lib/relativeTime";
 
 interface NotificationsPanelProps {
   notifications: AppNotification[];

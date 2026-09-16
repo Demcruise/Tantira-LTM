@@ -93,7 +93,7 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
         title="Revoke invite"
         description={`This permanently revokes the pending invite for ${revokeTarget?.email}. They will not be able to join using this invite link.`}
         confirmText="Revoke invite"
-        onCancel={() => setRevokeTarget(null)}
+        onClose={() => setRevokeTarget(null)}
         onConfirm={() => {
           if (revokeTarget) onRevoke(revokeTarget.id);
           setRevokeTarget(null);

@@ -1,12 +1,6 @@
 import { Button, Callout, Spinner } from "@blueprintjs/core";
 import type { Lead } from "../../types";
-
-function relativeTime(iso: string): string {
-  const seconds = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.round(seconds / 60);
-  return `${minutes}m ago`;
-}
+import { relativeTime } from "../../lib/relativeTime";
 
 interface WritebackStatusProps {
   lead: Lead;

@@ -1,13 +1,6 @@
 import { Button, Icon, Tag, Tooltip } from "@blueprintjs/core";
 import type { ValidationIssue, WorkflowVersion } from "../../lib/workflowLifecycle";
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
-}
+import { relativeTime } from "../../lib/relativeTime";
 
 interface WorkflowLifecycleBarProps {
   published: WorkflowVersion;

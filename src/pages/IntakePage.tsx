@@ -4,6 +4,7 @@ import type { IconName } from "@blueprintjs/icons";
 import type { IntakeItem, IntakeItemKind, IntakeSource, IntakeSourceStatus } from "../types";
 import { PageHeader } from "../components/PageHeader";
 import { KpiCard } from "../components/KpiRow";
+import { relativeTime } from "../lib/relativeTime";
 
 export type IntakeResolution =
   | { action: "create"; company: string; matchedExisting: boolean }
@@ -22,14 +23,6 @@ const ITEM_KIND_META: Record<IntakeItemKind, { label: string; icon: IconName; hi
   missing_company: { label: "Missing company", icon: "office", hint: "No company could be resolved from the message or domain." },
   duplicate: { label: "Possible duplicate", icon: "duplicate", hint: "Looks like an existing open lead." },
 };
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
-}
 
 interface IntakePageProps {
   sources: IntakeSource[];

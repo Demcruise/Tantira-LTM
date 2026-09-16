@@ -13,18 +13,29 @@ export interface RoleDef {
 
 export type PermissionMatrix = Record<string, Record<string, boolean>>; // roleId -> permKey -> granted
 
-export const PERMISSIONS: PermissionDef[] = [
+export const PERMISSIONS = [
   { key: "leads.view", module: "Leads", label: "View" },
   { key: "leads.assign", module: "Leads", label: "Assign" },
   { key: "leads.delete", module: "Leads", label: "Delete" },
   { key: "automation.view", module: "Automation", label: "View" },
   { key: "automation.edit", module: "Automation", label: "Edit" },
-  { key: "billing.view", module: "Billing", label: "View" },
   { key: "audit.view", module: "Audit Log", label: "View" },
   { key: "analytics.view", module: "Analytics", label: "View" },
-];
+  { key: "org.manage", module: "Organization", label: "Manage" },
+] as const satisfies readonly PermissionDef[];
+
+export type PermissionKey = (typeof PERMISSIONS)[number]["key"];
 
 export const PERMISSION_MODULES = Array.from(new Set(PERMISSIONS.map((p) => p.module)));
+
+export function resolveRoleId(roles: RoleDef[], roleName: string): string | undefined {
+  return roles.find((r) => r.name === roleName)?.id;
+}
+
+export function hasPermission(matrix: PermissionMatrix, roleId: string | undefined, permKey: PermissionKey): boolean {
+  if (!roleId) return false;
+  return matrix[roleId]?.[permKey] ?? false;
+}
 
 export const INITIAL_ROLES: RoleDef[] = [
   { id: "admin", name: "Admin", system: true, scope: null },
@@ -40,9 +51,9 @@ export const INITIAL_MATRIX: PermissionMatrix = {
     "leads.delete": true,
     "automation.view": true,
     "automation.edit": true,
-    "billing.view": true,
     "audit.view": true,
     "analytics.view": true,
+    "org.manage": true,
   },
   "sales-ops": {
     "leads.view": true,
@@ -50,9 +61,9 @@ export const INITIAL_MATRIX: PermissionMatrix = {
     "leads.delete": false,
     "automation.view": true,
     "automation.edit": true,
-    "billing.view": false,
     "audit.view": true,
     "analytics.view": true,
+    "org.manage": true,
   },
   rep: {
     "leads.view": true,
@@ -60,9 +71,9 @@ export const INITIAL_MATRIX: PermissionMatrix = {
     "leads.delete": false,
     "automation.view": false,
     "automation.edit": false,
-    "billing.view": false,
     "audit.view": false,
     "analytics.view": false,
+    "org.manage": false,
   },
   reporter: {
     "leads.view": true,
@@ -70,8 +81,8 @@ export const INITIAL_MATRIX: PermissionMatrix = {
     "leads.delete": false,
     "automation.view": false,
     "automation.edit": false,
-    "billing.view": false,
     "audit.view": true,
     "analytics.view": true,
+    "org.manage": false,
   },
 };

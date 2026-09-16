@@ -14,12 +14,12 @@ interface NeedsAttentionPageProps {
   processedThisWeek: number;
   intakeUnresolved: number;
   onOpenLead: (leadId: string) => void;
-  onChangeView: (view: AppView) => void;
+  onNavigate: (view: AppView) => void;
   onRetrySync: (leadId: string) => void;
   onLeadAction: (leadId: string, action: LeadActionType) => void;
 }
 
-export function NeedsAttentionPage({ leads, processedThisWeek, intakeUnresolved, onOpenLead, onChangeView, onRetrySync, onLeadAction }: NeedsAttentionPageProps) {
+export function NeedsAttentionPage({ leads, processedThisWeek, intakeUnresolved, onOpenLead, onNavigate, onRetrySync, onLeadAction }: NeedsAttentionPageProps) {
   const queue = useMemo(() => buildAttentionQueue(leads), [leads]);
   const [filter, setFilter] = useState<AttentionReason | "all">("all");
 
@@ -38,7 +38,7 @@ export function NeedsAttentionPage({ leads, processedThisWeek, intakeUnresolved,
         section="Operate"
         title="Attention Center"
         description={`${queue.length} item${queue.length === 1 ? "" : "s"} need a human decision · ${processedThisWeek} handled automatically this week. Everything the automation could not finish on its own lands here, in severity order.`}
-        tabs={<LeadsAreaTabs current="needs-attention" onChange={onChangeView} />}
+        tabs={<LeadsAreaTabs current="needs-attention" onChange={onNavigate} />}
       />
 
       {intakeUnresolved > 0 && (
@@ -46,7 +46,7 @@ export function NeedsAttentionPage({ leads, processedThisWeek, intakeUnresolved,
           <span>
             <strong>{intakeUnresolved}</strong> inbound message{intakeUnresolved === 1 ? "" : "s"} could not be turned into a lead automatically — ambiguous person, missing company or possible duplicate.
           </span>
-          <Button small intent="primary" rightIcon="arrow-right" text="Review intake" onClick={() => onChangeView("intake")} />
+          <Button small intent="primary" rightIcon="arrow-right" text="Review intake" onClick={() => onNavigate("intake")} />
         </Callout>
       )}
 

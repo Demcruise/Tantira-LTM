@@ -1,16 +1,10 @@
 import { Button, Card, H4, HTMLTable, NonIdealState } from "@blueprintjs/core";
 import type { Lead } from "../../types";
 import { computeSlaStatus } from "../../lib/sla";
+import { relativeTime } from "../../lib/relativeTime";
 import { PriorityTag } from "../Tags";
 import { SlaBadge } from "../SlaBadge";
 import { KpiCard } from "../KpiRow";
-
-function relativeTime(iso: string): string {
-  const hours = Math.round((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60));
-  if (hours < 1) return "just now";
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
-}
 
 interface SlaRiskPanelProps {
   leads: Lead[];

@@ -11,7 +11,7 @@ interface LeadsTableProps {
   loading: boolean;
   selectedId: string | null;
   checkedIds: Set<string>;
-  onSelect: (lead: Lead) => void;
+  onOpenLead: (leadId: string) => void;
   onToggleChecked: (leadId: string) => void;
   onToggleAll: (leadIds: string[], checked: boolean) => void;
   onClearFilters: () => void;
@@ -27,7 +27,7 @@ function formatRelative(iso: string): string {
 
 const COLUMN_WIDTHS = [40, 220, 120, 110, 100, 130, 110, 140, 70, 120];
 
-export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, onToggleChecked, onToggleAll, onClearFilters }: LeadsTableProps) {
+export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead, onToggleChecked, onToggleAll, onClearFilters }: LeadsTableProps) {
   if (loading) {
     return (
       <div className="leads-table__loading">
@@ -97,7 +97,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <div className="leads-table__lead-name">
                     {lead.name}
                     {lead.inNurture && (
@@ -118,7 +118,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   {lead.source}
                 </div>
               </Cell>
@@ -131,7 +131,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <SegmentTag segment={getEnrichmentData(lead).segment} />
                 </div>
               </Cell>
@@ -144,7 +144,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <PriorityTag priority={lead.priority} />
                 </div>
               </Cell>
@@ -157,7 +157,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <SlaBadge lead={lead} />
                 </div>
               </Cell>
@@ -170,7 +170,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <StatusTag status={lead.status} />
                 </div>
               </Cell>
@@ -183,7 +183,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   {lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>}
                 </div>
               </Cell>
@@ -197,7 +197,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const level = getEnrichmentData(lead).engagementEvents;
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   <Sparkline values={activityBars(lead.id, level)} />
                 </div>
               </Cell>
@@ -210,7 +210,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onSelect, o
             const lead = leads[rowIndex];
             return (
               <Cell className={rowClass(lead)} interactive={false}>
-                <div className="leads-table2__cell-click" onClick={() => onSelect(lead)}>
+                <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
                   {formatRelative(lead.lastActivity)}
                 </div>
               </Cell>

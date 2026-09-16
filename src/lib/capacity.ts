@@ -11,9 +11,9 @@ export function getOpenLeads(leads: Lead[]): Lead[] {
   return leads.filter((l) => l.status !== "Lost");
 }
 
-export function getRepLoad(leads: Lead[], repName: string): RepLoad | undefined {
+export function getRepLoad(leads: Lead[], repName: string): RepLoad | null {
   const rep = REPS.find((r) => r.name === repName);
-  if (!rep) return undefined;
+  if (!rep) return null;
   const total = getOpenLeads(leads).filter((l) => l.assignedTo === repName).length;
   return { rep, total, ratio: total / rep.capacity };
 }

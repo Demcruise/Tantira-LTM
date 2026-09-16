@@ -2,15 +2,8 @@ import { useState } from "react";
 import { Button, Callout, Icon, Radio, RadioGroup, Spinner, Tooltip } from "@blueprintjs/core";
 import type { Lead } from "../../types";
 import { getEnrichmentData } from "../../lib/enrichment";
+import { relativeTime } from "../../lib/relativeTime";
 import { OntologyLinks } from "./OntologyLinks";
-
-function relativeTime(iso: string): string {
-  const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutes < 60) return `${Math.max(minutes, 1)} min ago`;
-  const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.round(hours / 24)}d ago`;
-}
 
 function confidenceColor(value: number): string {
   if (value >= 85) return "#238551";

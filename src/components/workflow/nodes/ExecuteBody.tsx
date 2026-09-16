@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Collapse, HTMLSelect, InputGroup } from "@blueprintjs/core";
-import { FUNCTION_DEFS, FUNCTION_NAMES, ON_ERROR_OPTIONS, defaultFunctionInputs, type ExecuteNode, type OnError } from "../../../lib/workflowNodes";
+import { FUNCTION_DEFS, FUNCTION_NAMES, ON_ERROR_OPTIONS, defaultFunctionInputs, type ExecuteNode, type FunctionName, type OnError } from "../../../lib/workflowNodes";
 import { NodeField } from "./NodeField";
 import { VariableInsert } from "./VariableInsert";
 
@@ -17,7 +17,7 @@ export function ExecuteBody({ node, variables, onChange }: Props) {
   return (
     <>
       <NodeField label="Function" required hint="Org-registered custom functions only.">
-        <HTMLSelect fill value={node.fn} onChange={(e) => onChange({ fn: e.target.value, inputs: defaultFunctionInputs(e.target.value) })}>
+        <HTMLSelect fill value={node.fn} onChange={(e) => { const fn = e.target.value as FunctionName; onChange({ fn, inputs: defaultFunctionInputs(fn) }); }}>
           {FUNCTION_NAMES.map((f) => (
             <option key={f} value={f}>
               {f}
