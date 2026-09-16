@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Checkbox, Icon, NonIdealState, Spinner, Tooltip } from "@blueprintjs/core";
 import { Cell, Column, ColumnHeaderCell, Table2 } from "@blueprintjs/table";
-import type { Lead } from "../types";
+import type { Lead, Priority } from "../types";
 import { PriorityTag, SegmentTag, StatusTag } from "./Tags";
 import { SlaBadge } from "./SlaBadge";
 import { Sparkline, activityBars } from "./Sparkline";
 import { deriveEnrichmentData } from "../lib/enrichment";
+import { computeSlaStatus } from "../lib/sla";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -25,6 +26,10 @@ function formatRelative(iso: string): string {
   if (days === 1) return "Yesterday";
   return `${days} days ago`;
 }
+
+const PRIORITY_RANK: Record<Priority, number> = { Hot: 3, Warm: 2, Cold: 1 };
+
+type SortDir = "asc" | "desc";
 
 function useMeasuredWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -52,35 +57,62 @@ interface DataColumn {
   width: number;
   minWidth: number;
   render: (lead: Lead) => React.ReactNode;
+  sortValue: (lead: Lead) => string | number;
 }
 
 // Always shown: checkbox + Lead. Everything below drops out, in this order,
 // as the container narrows — the full record is still one click away via onOpenLead.
 const DATA_COLUMNS: DataColumn[] = [
-  { key: "priority", name: "Priority", width: 100, minWidth: 0, render: (lead) => <PriorityTag priority={lead.priority} /> },
-  { key: "status", name: "Status", width: 110, minWidth: 0, render: (lead) => <StatusTag status={lead.status} /> },
+  { key: "priority", name: "Priority", width: 100, minWidth: 0, render: (lead) => <PriorityTag priority={lead.priority} />, sortValue: (lead) => PRIORITY_RANK[lead.priority] },
+  { key: "status", name: "Status", width: 110, minWidth: 0, render: (lead) => <StatusTag status={lead.status} />, sortValue: (lead) => lead.status },
   {
     key: "assignedTo",
     name: "Assigned To",
     width: 140,
     minWidth: 650,
     render: (lead) => lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>,
+    sortValue: (lead) => lead.assignedTo ?? "zzz",
   },
-  { key: "sla", name: "SLA", width: 130, minWidth: 750, render: (lead) => <SlaBadge lead={lead} /> },
-  { key: "segment", name: "Segment", width: 110, minWidth: 850, render: (lead) => <SegmentTag segment={deriveEnrichmentData(lead).segment} /> },
-  { key: "source", name: "Source", width: 120, minWidth: 950, render: (lead) => lead.source },
+  { key: "sla", name: "SLA", width: 130, minWidth: 750, render: (lead) => <SlaBadge lead={lead} />, sortValue: (lead) => computeSlaStatus(lead).remainingHours },
+  { key: "segment", name: "Segment", width: 110, minWidth: 850, render: (lead) => <SegmentTag segment={deriveEnrichmentData(lead).segment} />, sortValue: (lead) => deriveEnrichmentData(lead).segment },
+  { key: "source", name: "Source", width: 120, minWidth: 950, render: (lead) => lead.source, sortValue: (lead) => lead.source },
   {
     key: "activity",
     name: "Activity",
     width: 70,
     minWidth: 1040,
     render: (lead) => <Sparkline values={activityBars(lead.id, deriveEnrichmentData(lead).engagementEvents)} />,
+    sortValue: (lead) => deriveEnrichmentData(lead).engagementEvents,
   },
-  { key: "lastActivity", name: "Last Activity", width: 120, minWidth: 1160, render: (lead) => formatRelative(lead.lastActivity) },
+  { key: "lastActivity", name: "Last Activity", width: 120, minWidth: 1160, render: (lead) => formatRelative(lead.lastActivity), sortValue: (lead) => new Date(lead.lastActivity).getTime() },
 ];
 
 export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead, onToggleChecked, onToggleAll, onClearFilters }: LeadsTableProps) {
   const { ref: wrapperRef, width: containerWidth } = useMeasuredWidth<HTMLDivElement>();
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  function handleSort(key: string) {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("asc");
+    }
+  }
+
+  const sortedLeads = (() => {
+    if (!sortKey) return leads;
+    const col = sortKey === "name" ? null : DATA_COLUMNS.find((c) => c.key === sortKey);
+    const accessor = col ? col.sortValue : (lead: Lead) => lead.name;
+    const sorted = [...leads].sort((a, b) => {
+      const av = accessor(a);
+      const bv = accessor(b);
+      if (typeof av === "number" && typeof bv === "number") return av - bv;
+      return String(av).localeCompare(String(bv));
+    });
+    return sortDir === "asc" ? sorted : sorted.reverse();
+  })();
 
   if (loading) {
     return (
@@ -102,13 +134,18 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
     );
   }
 
-  const visibleIds = leads.map((l) => l.id);
+  const visibleIds = sortedLeads.map((l) => l.id);
   const checkedVisible = visibleIds.filter((id) => checkedIds.has(id)).length;
   const allChecked = checkedVisible === visibleIds.length;
   const visibleColumns = containerWidth === 0 ? DATA_COLUMNS : DATA_COLUMNS.filter((c) => containerWidth >= c.minWidth);
 
   function rowClass(lead: Lead): string {
     return `leads-table2__row${lead.id === selectedId ? " leads-table2__row--selected" : ""}${checkedIds.has(lead.id) ? " leads-table2__row--checked" : ""}`;
+  }
+
+  function sortIcon(key: string): React.ReactNode {
+    if (sortKey !== key) return <Icon icon="double-caret-vertical" size={11} className="leads-table2__sort-icon leads-table2__sort-icon--inactive" />;
+    return <Icon icon={sortDir === "asc" ? "caret-up" : "caret-down"} size={11} className="leads-table2__sort-icon" />;
   }
 
   return (
@@ -118,7 +155,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
         // shrinks/grows in place (stale headers survive a live window resize) —
         // force a clean remount whenever the responsive column set changes.
         key={visibleColumns.map((c) => c.key).join(",")}
-        numRows={leads.length}
+        numRows={sortedLeads.length}
         enableRowHeader={false}
         enableColumnResizing
         enableGhostCells={false}
@@ -142,7 +179,7 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
               </ColumnHeaderCell>
             )}
             cellRenderer={(rowIndex) => {
-              const lead = leads[rowIndex];
+              const lead = sortedLeads[rowIndex];
               return (
                 <Cell className={rowClass(lead)} interactive={false}>
                   <div className="leads-table2__check-cell" onClick={(e) => e.stopPropagation()}>
@@ -155,8 +192,15 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
           <Column
             key="__lead"
             name="Lead"
+            columnHeaderCellRenderer={() => (
+              <ColumnHeaderCell>
+                <div className="leads-table2__header-sort" onClick={() => handleSort("name")}>
+                  Lead {sortIcon("name")}
+                </div>
+              </ColumnHeaderCell>
+            )}
             cellRenderer={(rowIndex) => {
-              const lead = leads[rowIndex];
+              const lead = sortedLeads[rowIndex];
               return (
                 <Cell className={rowClass(lead)} interactive={false}>
                   <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
@@ -178,8 +222,15 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
             <Column
               key={col.key}
               name={col.name}
+              columnHeaderCellRenderer={() => (
+                <ColumnHeaderCell>
+                  <div className="leads-table2__header-sort" onClick={() => handleSort(col.key)}>
+                    {col.name} {sortIcon(col.key)}
+                  </div>
+                </ColumnHeaderCell>
+              )}
               cellRenderer={(rowIndex) => {
-                const lead = leads[rowIndex];
+                const lead = sortedLeads[rowIndex];
                 return (
                   <Cell className={rowClass(lead)} interactive={false}>
                     <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>

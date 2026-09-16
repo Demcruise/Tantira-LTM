@@ -14,7 +14,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 
 ## Item-by-item (Blueprint-adapted)
 
-**1. Leads Table (All Leads)** — B1 already made it responsive. Remaining gap vs. the reference: no click-to-sort column headers. Blueprint `Table2`'s `ColumnHeaderCell` supports a custom click handler — add local sort state (column + direction) and re-sort `filteredLeads` before rendering, with a sort-direction icon in the header. Selection toolbar equivalent already exists (`BulkActionBar`).
+**1. Leads Table (All Leads)** — ~~B1 already made it responsive. Remaining gap vs. the reference: no click-to-sort column headers. Blueprint `Table2`'s `ColumnHeaderCell` supports a custom click handler — add local sort state (column + direction) and re-sort `filteredLeads` before rendering, with a sort-direction icon in the header. Selection toolbar equivalent already exists (`BulkActionBar`).~~ **DONE** — Added click-to-sort on all columns (Lead name + all 8 data columns). Each column has a `sortValue` accessor (Priority by rank Hot=3/Warm=2/Cold=1, SLA by remaining hours, Activity by event count, Last Activity by timestamp, others alphabetical). Sort state (key + asc/desc) is local to LeadsTable. Column headers show caret-up/caret-down for active sort, double-caret-vertical (dimmed) for inactive. Clicking a header toggles asc→desc; clicking a new column defaults to asc. Verified: typecheck + build pass; sorting works on all visible columns at every responsive breakpoint.
 
 **2. Stat cards (KpiCard)** — current component is already icon+label+value in a bordered card, functionally equivalent to the reference. No structural gap; leave as-is unless a specific visual (spacing/type scale) complaint is named.
 
@@ -34,7 +34,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 
 **10. Workflow Builder — two asks:**
    - ~~Stepper (Draft/Test/Validate/Publish/Monitor) should stretch to fill its card's width — CSS-only, give each segment `flex: 1` instead of its current intrinsic width.~~ **DONE** — `.wf-lifecycle__step` given `flex: 1` + `text-align: center`, `.wf-lifecycle__steps` given `width: 100%`. Verified: 5 segments now stretch evenly across the full card width at 1920/1440/1024px.
-   - 9-button toolbar should collapse overflow into a "···" menu (Blueprint `Popover` + `Menu`) instead of wrapping to a second row. This needs the same "measure container, decide what fits" approach already built for the responsive leads table (`useMeasuredWidth`-style hook) — real effort, not a one-liner, but a proven pattern to reuse.
+   - ~~9-button toolbar should collapse overflow into a "···" menu (Blueprint `Popover` + `Menu`) instead of wrapping to a second row. This needs the same "measure container, decide what fits" approach already built for the responsive leads table (`useMeasuredWidth`-style hook) — real effort, not a one-liner, but a proven pattern to reuse.~~ **DONE** — Added `useToolbarOverflow` hook (ResizeObserver + per-button width estimate ~110px) that measures the toolbar container and splits the 9 node-type buttons into visible + overflow. Overflow buttons render in a Blueprint `Popover`+`Menu` "···" button. Removed `flex-wrap` from `.wf-toolbar__items` so it no longer wraps to a second row. Verified: typecheck + build pass; at wide widths all 9 buttons show; at narrow widths the less-frequent ones collapse into the "···" menu.
 
 **11. API Keys page** — current page already has generate/revoke with a confirm dialog. Gap vs. reference: no scope badges shown per key, and needs confirming whether a freshly-generated secret is shown once with a copy button (the reference's best idea, and copy-able onto our stack with a Blueprint `Callout` + `Tag` + a `navigator.clipboard` copy button — no new dependency needed). Needs a quick look at the current page before scoping the exact diff.
 
@@ -60,7 +60,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 2. ~~#10a (stepper stretch)~~ **DONE** — `flex: 1` on `.wf-lifecycle__step`, stretches full width.
 3. ~~#8 (Drawer→Dialog)~~ **DONE** — LeadDetailPanel now uses centered Dialog with backdrop.
 4. ~~#12 (Team Members)~~ **DONE** — avatar chips, bulk-select toolbar with Resend/Revoke all.
-5. #1 (sortable columns), #10b (toolbar overflow menu) — both need the "measure + decide" pattern; do together.
+5. ~~#1 (sortable columns), #10b (toolbar overflow menu)~~ **DONE** — both use the "measure + decide" pattern; done together.
 6. #11, #15, #16 — each needs a quick look at current state before finalizing scope; small-to-medium once scoped.
 7. #6, #7, #13 — polish-only, lowest urgency.
 8. #9 — blocked on clarifying what "wrong" means before scoping.

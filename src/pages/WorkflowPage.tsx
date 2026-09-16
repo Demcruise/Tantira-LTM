@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Icon } from "@blueprintjs/core";
+import { useEffect, useRef, useState } from "react";
+import { Icon, Menu, MenuItem, Popover } from "@blueprintjs/core";
 import type { Lead } from "../types";
 import type { AppView, FilterPreset } from "../types";
 import { runDryRun, type DryRunResult } from "../lib/dryRun";
@@ -20,6 +20,37 @@ import { PageHeader } from "../components/PageHeader";
 
 function Connector() {
   return <div className="wf-connector" />;
+}
+
+/** Estimate per-button width (icon + label + padding + border). */
+const WF_BUTTON_ESTIMATE = 110;
+/** Reserve space for the overflow "···" button itself. */
+const WF_OVERFLOW_RESERVE = 44;
+
+/** Measure the toolbar container and decide how many buttons fit before
+ *  overflowing into a "···" menu. */
+function useToolbarOverflow(totalButtons: number) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(totalButtons);
+
+  useEffect(() => {
+    const el = ref.current;
+    const view = el?.ownerDocument.defaultView;
+    if (!el || !view?.ResizeObserver) return;
+    function recompute() {
+      const el2 = ref.current;
+      if (!el2) return;
+      const available = el2.clientWidth - WF_OVERFLOW_RESERVE;
+      const fits = Math.floor(available / WF_BUTTON_ESTIMATE);
+      setVisibleCount(Math.min(Math.max(fits, 1), totalButtons));
+    }
+    recompute();
+    const observer = new view.ResizeObserver(recompute);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [totalButtons]);
+
+  return { ref, visibleCount };
 }
 
 type FixedStage =
@@ -48,6 +79,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   const [testedSinceChange, setTestedSinceChange] = useState(false);
   const [issues, setIssues] = useState<ValidationIssue[] | null>(null);
   const [confirm, setConfirm] = useState<"publish" | "rollback" | null>(null);
+  const { ref: toolbarRef, visibleCount } = useToolbarOverflow(NODE_KINDS.length);
 
   const selectedLead = leads.find((l) => l.id === selectedLeadId) ?? null;
   const status = dryRunResult?.statusByNode ?? {};
@@ -292,8 +324,8 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
 
       <div className="wf-canvas">
         <div className="wf-toolbar">
-          <div className="wf-toolbar__items">
-            {NODE_KINDS.map((kind) => {
+          <div className="wf-toolbar__items" ref={toolbarRef}>
+            {NODE_KINDS.slice(0, visibleCount).map((kind) => {
               const meta = NODE_META[kind];
               return (
                 <button
@@ -308,6 +340,31 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
                 </button>
               );
             })}
+            {visibleCount < NODE_KINDS.length && (
+              <Popover
+                placement="bottom-start"
+                minimal
+                content={
+                  <Menu>
+                    {NODE_KINDS.slice(visibleCount).map((kind) => {
+                      const meta = NODE_META[kind];
+                      return (
+                        <MenuItem
+                          key={kind}
+                          icon={meta.icon}
+                          text={meta.label}
+                          onClick={() => handleAddNode(kind)}
+                        />
+                      );
+                    })}
+                  </Menu>
+                }
+              >
+                <button type="button" className="wf-toolbar__item wf-toolbar__item--overflow" title="More block types">
+                  <Icon icon="more" size={13} />
+                </button>
+              </Popover>
+            )}
           </div>
           <div className="wf-dryrun-toolbar">
             <DryRunToggle testMode={testMode} onToggle={setTestMode} />

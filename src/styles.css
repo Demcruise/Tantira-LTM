@@ -3485,9 +3485,10 @@ body {
 .wf-toolbar__items {
   display: flex;
   align-items: stretch;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .wf-toolbar__item {
@@ -5966,4 +5967,29 @@ textarea.wf-node-code {
 .team-bulk-bar__count {
   font-size: 13px;
   margin-right: auto;
+}
+
+/* ── Leads Table: sortable column headers ── */
+.leads-table2__header-sort {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  height: 100%;
+}
+.leads-table2__header-sort:hover {
+  color: #2d72d2;
+}
+.leads-table2__sort-icon {
+  flex-shrink: 0;
+}
+.leads-table2__sort-icon--inactive {
+  opacity: 0.3;
+}
+
+/* Workflow toolbar overflow button */
+.wf-toolbar__item--overflow {
+  flex-shrink: 0;
+  padding: 9px 14px;
 }
