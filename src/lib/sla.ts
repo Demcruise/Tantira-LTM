@@ -20,10 +20,10 @@ export interface SlaStatus {
   label: string;
 }
 
-export function computeSlaStatus(lead: Pick<Lead, "priority" | "createdAt">): SlaStatus {
+export function computeSlaStatus(lead: Pick<Lead, "priority" | "createdAt">, now: number = Date.now()): SlaStatus {
   const slaHours = SLA_HOURS_BY_PRIORITY[lead.priority];
   const deadline = new Date(lead.createdAt).getTime() + slaHours * 60 * 60 * 1000;
-  const remainingHours = (deadline - Date.now()) / (1000 * 60 * 60);
+  const remainingHours = (deadline - now) / (1000 * 60 * 60);
 
   if (remainingHours <= 0) {
     return { risk: "overdue", remainingHours, label: `Overdue ${formatSlaHours(remainingHours)}` };

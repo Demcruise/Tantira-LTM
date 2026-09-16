@@ -24,7 +24,7 @@ export function ConflictsDialog({ connection, onClose, onResolve, onOpenLead }: 
                 conflict={c}
                 connectionName={connection.name}
                 onResolve={(resolution) => onResolve(connection.id, c.id, resolution)}
-                onOpenLead={() => onOpenLead(c.leadId)}
+                onOpen={() => onOpenLead(c.leadId)}
               />
             ))}
           </div>

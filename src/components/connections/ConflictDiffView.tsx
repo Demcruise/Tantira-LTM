@@ -5,16 +5,16 @@ interface ConflictDiffViewProps {
   conflict: SyncConflict;
   connectionName?: string;
   onResolve: (resolution: "keep_crm" | "keep_tantira" | "merge") => void;
-  onOpenLead?: () => void;
+  onOpen?: () => void;
 }
 
-export function ConflictDiffView({ conflict, connectionName, onResolve, onOpenLead }: ConflictDiffViewProps) {
+export function ConflictDiffView({ conflict, connectionName, onResolve, onOpen }: ConflictDiffViewProps) {
   return (
     <div className="conflict-diff-view">
       <div className="conflict-diff-view__header">
         <span className="conflict-diff-view__lead">{conflict.leadName}</span>
         <Tag minimal>{conflict.field}</Tag>
-        {onOpenLead && <Button small minimal icon="document-open" text="Open lead" onClick={onOpenLead} className="conflict-diff-view__open" />}
+        {onOpen && <Button small minimal icon="document-open" text="Open lead" onClick={onOpen} className="conflict-diff-view__open" />}
       </div>
 
       <p className="conflict-diff-view__provenance">
