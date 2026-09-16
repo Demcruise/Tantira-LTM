@@ -24,13 +24,13 @@ export function CreateVariableBody({ node, variables, onChange }: Props) {
           ))}
         </HTMLSelect>
       </NodeField>
-      <NodeField label="Value / Expression" required hint="Dot-notation references to prior step outputs.">
+      <NodeField label="Value / Expression" required hint="Reference a value from a previous step.">
         <div className="wf-node-row">
           <InputGroup
             fill
             className="wf-node-code"
             value={node.expression}
-            placeholder="Trigger.Lead.score"
+            placeholder="Lead score"
             onChange={(e) => onChange({ expression: e.target.value })}
           />
           <VariableInsert variables={variables} onInsert={(v) => onChange({ expression: v })} />

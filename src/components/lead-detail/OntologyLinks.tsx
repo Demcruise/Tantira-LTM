@@ -43,7 +43,7 @@ function buildRows(lead: Lead): EntityRow[] {
           ? `Linked via ${lead.email} — ${data.segment} segment, ${data.hqLocation}.`
           : lead.accountMatch === "ambiguous"
             ? `Possible matches: ${lead.candidateAccounts.join(", ")} — resolve above to link.`
-            : `No existing match — a new Account object is created on sync.`,
+            : `No existing match — a new company profile is created on sync.`,
     },
     {
       type: "Opportunity",

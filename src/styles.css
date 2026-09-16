@@ -5629,3 +5629,279 @@ textarea.wf-node-code {
   --rb-r-3xl: calc(var(--rb-radius) + min(6px, var(--rb-radius)));
   --rb-r-4xl: calc(var(--rb-radius) + min(8px, var(--rb-radius)));
 }
+
+/* ============================================================
+   RESPONSIVE LAYOUT — breakpoints: 1024px / 768px / 480px
+   ============================================================ */
+
+/* ── 1024px: tablet landscape / small laptop ── */
+@media (max-width: 1024px) {
+  /* Reduce main padding */
+  .app-main {
+    padding: 20px 32px;
+  }
+  .app-header {
+    padding: 0 32px;
+  }
+
+  /* KPI rows: 4 → 2 columns */
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Connections KPIs: 5 → 3 columns */
+  .connections-page__kpis {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Performance 2-col grid stays side-by-side but tightens */
+  .perf__grid-2 {
+    gap: 16px;
+  }
+
+  /* Performance stats: 4 → 2 columns */
+  .perf__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Model feedback: 3 → 2 columns */
+  .model-feedback__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Attention row: reduce gap */
+  .attention-row {
+    gap: 12px;
+  }
+}
+
+/* ── 768px: tablet portrait ── */
+@media (max-width: 768px) {
+  /* Further reduce padding */
+  .app-main {
+    padding: 16px 20px;
+  }
+  .app-header {
+    padding: 0 20px;
+    height: 44px;
+  }
+
+  /* KPI rows: stack to 1 column */
+  .kpi-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Connections KPIs: stack */
+  .connections-page__kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Connection card stats: stack */
+  .connection-card__stats {
+    grid-template-columns: 1fr;
+  }
+
+  /* SSO provider grid: stack */
+  .sso-page__provider-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Performance 2-col grid: stack vertically */
+  .perf__grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Performance stats: 2 columns */
+  .perf__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Model feedback: stack */
+  .model-feedback__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Performance tier row: simplify to 2 columns */
+  .perf__tier {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+  .perf__tier-rate {
+    grid-column: 1 / -1;
+  }
+
+  /* Performance bar row: stack label above bar */
+  .perf__bar-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* Model feedback bar row: stack */
+  .model-feedback__bar-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* Attention row: stack to 2 columns (lead + reason) */
+  .attention-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 12px 0;
+  }
+  .attention-row__actions {
+    justify-content: flex-end;
+  }
+
+  /* Scoring rule table: stack */
+  .scoring-rule-table__header,
+  .scoring-rule-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* Lead detail drawer: full width */
+  .bp5-drawer {
+    width: 100% !important;
+  }
+
+  /* Recommendation grid: stack */
+  .recommendation__grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Provenance row: stack */
+  .provenance__row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* Downstream step: stack */
+  .downstream__step {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  /* SSO attribute row: stack */
+  .sso-page__attr-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Mobile sidebar: hide by default, show as overlay drawer ── */
+  .app-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: none;
+  }
+  .app-sidebar--mobile-open {
+    transform: translateX(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Mobile sidebar backdrop */
+  .app-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
+  }
+
+  /* Hamburger button in header (hidden on desktop) */
+  .app-header__hamburger {
+    display: flex;
+  }
+
+  /* Touch-friendly tap targets */
+  .nav-sidebar__item {
+    min-height: 44px;
+  }
+  .nav-sidebar__rail-btn,
+  .nav-sidebar__icon-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .app-header__bell {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Page header: stack title and actions */
+  .page-header__row {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Filters bar: stack */
+  .filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filters-bar__search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+/* ── 480px: mobile ── */
+@media (max-width: 480px) {
+  /* Minimal padding */
+  .app-main {
+    padding: 12px 16px;
+  }
+  .app-header {
+    padding: 0 16px;
+  }
+
+  /* All KPI grids: single column */
+  .kpi-row,
+  .connections-page__kpis,
+  .perf__stats {
+    grid-template-columns: 1fr;
+  }
+
+  /* Performance daily chart: smaller bars */
+  .perf__daily {
+    height: 80px;
+    gap: 4px;
+  }
+  .perf__daily-bar {
+    max-width: 24px;
+  }
+
+  /* Hide secondary table columns on mobile (applied via data attributes) */
+  .bp5-html-table th[data-mobile-hide],
+  .bp5-html-table td[data-mobile-hide] {
+    display: none;
+  }
+
+  /* Smaller font sizes for density */
+  .kpi-card h4.kpi-card__value {
+    font-size: 20px;
+  }
+}
+
+/* Desktop: hide hamburger and backdrop */
+.app-header__hamburger {
+  display: none;
+}
+.app-sidebar-backdrop {
+  display: none;
+}
+
+/* Generic table scroll wrapper — prevents wide tables from breaking page layout */
+.table-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll-wrap .bp5-html-table {
+  width: 100%;
+}

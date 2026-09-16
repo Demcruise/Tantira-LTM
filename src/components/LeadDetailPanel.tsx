@@ -137,7 +137,7 @@ export function LeadDetailPanel({
 
       <AiAnalysisPanel lead={lead} leads={leads} recommendation={recommendation} />
 
-      <SectionAccordion flagged={enrichmentFlagged} title="Enrichment" summary={enrichmentSummary}>
+      <SectionAccordion flagged={enrichmentFlagged} title="Lead details" summary={enrichmentSummary}>
         <EnrichmentSection lead={lead} onCorrectMatch={onCorrectMatch} onResolveAmbiguous={onResolveAmbiguous} />
       </SectionAccordion>
 

@@ -137,9 +137,12 @@ interface AppSidebarProps {
    * changes what shows up here. Items without `requiredPermission` are
    * visible to everyone (no corresponding entry exists in the matrix yet). */
   permissions?: Set<PermissionKey>;
+  /** Mobile drawer open state — controlled by parent so AppHeader can toggle it. */
+  mobileOpen?: boolean;
+  onCloseMobile?: () => void;
 }
 
-export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebarProps) {
+export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, permissions, mobileOpen, onCloseMobile }: AppSidebarProps) {
   function isItemVisible(item: NavItem): boolean {
     return !item.requiredPermission || (permissions?.has(item.requiredPermission) ?? true);
   }
@@ -172,8 +175,16 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
   const rail = useScrollFade<HTMLElement>();
   const pages = useScrollFade<HTMLElement>();
 
+  function handleNavigate(view: AppView, filterPreset?: FilterPreset) {
+    onNavigate(view, filterPreset);
+    onCloseMobile?.();
+  }
+
   return (
-    <div className="nav-sidebar">
+    <>
+      {mobileOpen && <div className="app-sidebar-backdrop" onClick={onCloseMobile} aria-hidden="true" />}
+      <div className={cx("app-sidebar", mobileOpen && "app-sidebar--mobile-open")}>
+        <div className="nav-sidebar">
       <aside className="nav-sidebar__rail">
         <div className="nav-sidebar__logo">
           <span className="nav-sidebar__logo-mark">T</span>
@@ -263,7 +274,7 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
                           <button
                             type="button"
                             aria-current={current ? "page" : undefined}
-                            onClick={() => item.view && onNavigate(item.view, item.filterPreset)}
+                            onClick={() => item.view && handleNavigate(item.view, item.filterPreset)}
                             disabled={!item.view}
                             className={cx(
                               "nav-sidebar__item",
@@ -306,6 +317,8 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
           </div>
         </div>
       )}
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

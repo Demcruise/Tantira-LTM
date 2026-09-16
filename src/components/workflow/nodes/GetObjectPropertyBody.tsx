@@ -1,5 +1,5 @@
 import { HTMLSelect, InputGroup } from "@blueprintjs/core";
-import { OBJECT_PROPERTIES, SOURCE_OBJECTS, suggestOutputVar, type GetObjectPropertyNode } from "../../../lib/workflowNodes";
+import { OBJECT_PROPERTIES, SOURCE_OBJECTS, friendlyLabel, suggestOutputVar, type GetObjectPropertyNode } from "../../../lib/workflowNodes";
 import { NodeField } from "./NodeField";
 
 interface Props {
@@ -14,7 +14,7 @@ export function GetObjectPropertyBody({ node, onChange }: Props) {
         <HTMLSelect fill value={node.source} onChange={(e) => onChange({ source: e.target.value })}>
           {SOURCE_OBJECTS.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {friendlyLabel(s)}
             </option>
           ))}
         </HTMLSelect>

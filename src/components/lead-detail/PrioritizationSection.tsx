@@ -17,13 +17,13 @@ export function PrioritizationSection({ lead, confidence, rules }: { lead: Lead;
     <div className="prioritization-section">
       <div className="prioritization-section__row">
         <PriorityTag priority={lead.priority} />
-        <Tooltip content="Fit + Intent score, weighted by firmographic match and engagement activity.">
+        <Tooltip content="Fit + Intent score, based on company fit and engagement activity.">
           <span className="prioritization-section__score">
             {lead.score}/100 <span className="prioritization-section__info">ⓘ</span>
           </span>
         </Tooltip>
       </div>
-      <ConfidenceMeter value={confidence} label="confidence in this tier" />
+      <ConfidenceMeter value={confidence} label="confidence in this priority" />
 
       <button type="button" className="prioritization-section__why-toggle" onClick={() => setOpen(!open)}>
         <Icon icon={open ? "chevron-up" : "chevron-down"} size={11} />
@@ -47,7 +47,7 @@ export function PrioritizationSection({ lead, confidence, rules }: { lead: Lead;
           )}
 
           <div className="prioritization-section__breakdown-total">
-            <span>Computed from active rules</span>
+            <span>Based on current rules</span>
             <span>
               {explanation.computedScore}/100 · <PriorityTag priority={computedTier} />
             </span>
@@ -55,8 +55,7 @@ export function PrioritizationSection({ lead, confidence, rules }: { lead: Lead;
 
           {diverges && (
             <p className="prioritization-section__breakdown-note">
-              <Icon icon="warning-sign" size={11} /> Diverges from the recorded tier ({lead.priority}) — the model or rules may have
-              changed since this lead was scored.
+              <Icon icon="warning-sign" size={11} /> This lead's priority may have changed since it was scored — the rules may have been updated.
             </p>
           )}
 

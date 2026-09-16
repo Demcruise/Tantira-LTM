@@ -83,14 +83,14 @@ export function EnrichmentSection({ lead, onCorrectMatch, onResolveAmbiguous }: 
         </Callout>
       ) : (
         <Callout intent="warning" icon="new-object" title="New account">
-          No existing match for {lead.company} — a new Account object will be created on sync.
+          No existing match for {lead.company} — a new company profile will be created on sync.
         </Callout>
       )}
 
       {recalculating ? (
         <div className="enrichment-section__recalculating">
           <Spinner size={14} />
-          <span>Recalculating score…</span>
+          <span>Updating score…</span>
         </div>
       ) : (
         <Button
@@ -115,7 +115,7 @@ export function EnrichmentSection({ lead, onCorrectMatch, onResolveAmbiguous }: 
           <div className="provenance__row" key={f.key}>
             <span className="provenance__label">{f.label}</span>
             <strong className="provenance__value">{f.value}</strong>
-            <Tooltip content={`Source: ${f.source} · confidence ${f.confidence}% — feeds prioritization and routing`} placement="left">
+            <Tooltip content={`Source: ${f.source} · confidence ${f.confidence}% — used for scoring and assignment`} placement="left">
               <span className="provenance__meta">
                 <span className="provenance__source">{f.source}</span>
                 <span className="provenance__confidence" style={{ color: confidenceColor(f.confidence) }}>

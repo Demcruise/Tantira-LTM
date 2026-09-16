@@ -21,7 +21,7 @@ export function AssignmentPage({ leads, assigneeOptions, onOpenLead, onAssign, o
       <PageHeader
         section="Optimize"
         title="Assignment & SLA"
-        description="Rep load against capacity, and every lead approaching or past its response window. Assign from the pool here; the rules that drive auto-assignment live under Automation → Assignment Rules."
+        description="How busy each rep is, and every lead approaching or past its response window. Assign from the pool here; the rules that drive automatic assignment live under Automation → Assignment Rules."
       />
       <CapacityHeatmap leads={leads} onAssignUnassigned={() => setPoolOpen(true)} />
       <SlaRiskPanel leads={leads} onOpenLead={onOpenLead} />

@@ -29,7 +29,8 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
       />
 
       <Card className="page-card">
-      <HTMLTable className="team-page__table">
+      <div className="table-scroll-wrap">
+        <HTMLTable className="team-page__table">
         <thead>
           <tr>
             <th>Name</th>
@@ -84,6 +85,7 @@ export function TeamMembersPage({ members, roles, onInvite, onChangeRole, onRese
           ))}
         </tbody>
       </HTMLTable>
+      </div>
       </Card>
 
       <InviteMemberDialog isOpen={inviteOpen} roles={roles} onClose={() => setInviteOpen(false)} onInvite={onInvite} />

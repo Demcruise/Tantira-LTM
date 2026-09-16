@@ -80,6 +80,7 @@ export function App() {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [acknowledgedOverrideIds, setAcknowledgedOverrideIds] = useState<Set<string>>(new Set());
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [auditSearchSeed, setAuditSearchSeed] = useState("");
   const [workflowNodes, setWorkflowNodes] = useState<WorkflowNode[]>([]);
   const [workflowVersions, setWorkflowVersions] = useState<WorkflowVersion[]>(() => {
@@ -619,15 +620,15 @@ export function App() {
   return (
     <ErrorBoundary>
     <div className="app-shell app-shell--sidebar">
-      <div className="app-sidebar">
-        <AppSidebar
-          activeView={view}
-          activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
-          onNavigate={navigateTo}
-          onLogout={handleLogout}
-          permissions={currentUserPermissions}
-        />
-      </div>
+      <AppSidebar
+        activeView={view}
+        activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
+        onNavigate={navigateTo}
+        onLogout={handleLogout}
+        permissions={currentUserPermissions}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+      />
 
       <div className="app-content">
         <AppHeader
@@ -635,6 +636,7 @@ export function App() {
           leads={leads}
           onMarkAllRead={handleMarkAllNotificationsRead}
           onSelectNotification={handleSelectNotification}
+          onToggleSidebar={() => setMobileSidebarOpen(true)}
         />
 
       {view === "dashboard" && (

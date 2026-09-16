@@ -14,7 +14,8 @@ export function NotificationPreferencesPage({ matrix, onToggle }: NotificationPr
       <PageHeader section="Govern" title="Notification Preferences" description="Choose how you want to hear about each type of event. Changes save automatically." />
 
       <Card className="page-card">
-      <HTMLTable className="notif-prefs-page__table">
+      <div className="table-scroll-wrap">
+        <HTMLTable className="notif-prefs-page__table">
         <thead>
           <tr>
             <th>Event</th>
@@ -42,6 +43,7 @@ export function NotificationPreferencesPage({ matrix, onToggle }: NotificationPr
           ))}
         </tbody>
       </HTMLTable>
+      </div>
       </Card>
     </div>
   );

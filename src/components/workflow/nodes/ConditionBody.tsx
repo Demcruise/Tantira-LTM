@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { HTMLSelect, InputGroup } from "@blueprintjs/core";
-import { CONDITION_FIELDS, CONDITION_OPERATORS, type ConditionNode, type ConditionOperator } from "../../../lib/workflowNodes";
+import { CONDITION_FIELDS, CONDITION_OPERATORS, friendlyLabel, type ConditionNode, type ConditionOperator } from "../../../lib/workflowNodes";
 
 interface Props {
   node: ConditionNode;
@@ -18,7 +18,7 @@ export function ConditionBody({ node, onChange, thenChildren, elseChildren, bran
         <HTMLSelect value={node.left} onChange={(e) => onChange({ left: e.target.value })}>
           {CONDITION_FIELDS.map((f) => (
             <option key={f} value={f}>
-              {f}
+              {friendlyLabel(f)}
             </option>
           ))}
         </HTMLSelect>

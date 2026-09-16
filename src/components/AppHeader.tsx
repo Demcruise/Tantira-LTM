@@ -8,14 +8,25 @@ interface AppHeaderProps {
   leads: Lead[];
   onMarkAllRead: () => void;
   onSelectNotification: (notification: AppNotification) => void;
+  onToggleSidebar?: () => void;
 }
 
-export function AppHeader({ notifications, leads, onMarkAllRead, onSelectNotification }: AppHeaderProps) {
+export function AppHeader({ notifications, leads, onMarkAllRead, onSelectNotification, onToggleSidebar }: AppHeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <header className="app-header">
+      {onToggleSidebar && (
+        <button
+          type="button"
+          className="app-header__hamburger"
+          aria-label="Open navigation"
+          onClick={onToggleSidebar}
+        >
+          <Icon icon="menu" size={20} />
+        </button>
+      )}
       <Popover
         isOpen={isOpen}
         onInteraction={(next) => setIsOpen(next)}

@@ -104,7 +104,8 @@ export function AuditLogPage({ entries, initialSearch }: { entries: AuditLogEntr
         </HTMLSelect>
       </div>
 
-      <HTMLTable className="audit-log-page__table" interactive>
+      <div className="table-scroll-wrap">
+        <HTMLTable className="audit-log-page__table" interactive>
         <thead>
           <tr>
             <th>Time</th>
@@ -174,6 +175,7 @@ export function AuditLogPage({ entries, initialSearch }: { entries: AuditLogEntr
           })}
         </tbody>
       </HTMLTable>
+      </div>
 
       {filtered.length === 0 && <p className="audit-log-page__empty">No events in this range.</p>}
       </Card>

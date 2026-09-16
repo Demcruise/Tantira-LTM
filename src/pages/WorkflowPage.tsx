@@ -58,16 +58,16 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   const previousVersion = getPreviousVersion(versions, published.version);
 
   const fixedStages: FixedStage[] = [
-    { kind: "trigger", id: FIXED_STAGE_IDS.trigger, name: "New Lead Captured", eventLabel: "Lead object created", source: "Lead" },
+    { kind: "trigger", id: FIXED_STAGE_IDS.trigger, name: "New Lead Captured", eventLabel: "Lead created", source: "Lead" },
     {
       kind: "action",
       id: FIXED_STAGE_IDS.enrich,
       name: "Enrich Lead Data",
       actionIcon: "new-object",
-      actionLabel: "Enrich Lead (Clearbit + firmographics)",
+      actionLabel: "Enrich lead (company details)",
       fields: [
         { label: "Lead", value: "Trigger.Lead", required: true },
-        { label: "Enrichment Source", value: "Clearbit API" },
+        { label: "Enrichment Source", value: "Enrichment service" },
       ],
     },
     {
@@ -75,12 +75,12 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
       id: FIXED_STAGE_IDS.score,
       name: "Compute Lead Score",
       actionIcon: "calculator",
-      actionLabel: "Score Lead (rules + firmographic weight)",
+      actionLabel: "Score lead (rules + company fit)",
       fields: [
         { label: "Lead", value: "Enrich Lead Data.Output", required: true },
-        { label: "Prioritization Model", value: "v3 — Firmographic + Engagement" },
+        { label: "Prioritization Model", value: "v3 — Company fit + Engagement" },
       ],
-      configLink: { label: "Scoring rules & tier thresholds — Prioritization Model", onClick: () => onNavigate("prioritization-model") },
+      configLink: { label: "Scoring rules & priority cutoffs — Prioritization Model", onClick: () => onNavigate("prioritization-model") },
     },
     {
       kind: "conditional",
@@ -107,10 +107,10 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
         id: FIXED_STAGE_IDS.assignRoundRobin,
         name: "Assign to Round-Robin Queue",
         actionIcon: "people",
-        actionLabel: "Assign Lead (SDR round-robin)",
+        actionLabel: "Assign lead (round-robin)",
         fields: [
           { label: "Lead", value: "Compute Lead Score.Output", required: true },
-          { label: "Assignee Pool", value: "SDR Queue" },
+          { label: "Assignee Pool", value: "SDR queue" },
           { label: "SLA", value: "4 hours" },
         ],
         configLink: { label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") },

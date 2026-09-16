@@ -51,7 +51,7 @@ export function CommandCenterPage({ leads, connections, autoProcessedLog, onNavi
         <KpiCard label="Open Leads" value={open.length} icon="people" intent="primary" />
         <KpiCard label="New Today" value={newToday} icon="star" intent="success" />
         <KpiCard label="Hot Leads Open" value={hotOpen} icon="flame" intent={hotOpen > 0 ? "danger" : undefined} />
-        <KpiCard label="SLA Breached" value={slaBreached} icon="warning-sign" intent={slaBreached > 0 ? "danger" : undefined} />
+        <KpiCard label="Response deadlines missed" value={slaBreached} icon="warning-sign" intent={slaBreached > 0 ? "danger" : undefined} />
         <KpiCard label="Sync Issues" value={syncIssues} icon="offline" intent={syncIssues > 0 ? "warning" : undefined} />
         <KpiCard label="Automated (7d)" value={automatedThisWeek} icon="automatic-updates" intent="primary" />
       </div>

@@ -118,7 +118,7 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
       <PageHeader
         section="Operate"
         title="Inbound Sources"
-        description="Where leads come from and how well the extractor turns raw messages into leads. Anything it cannot resolve on its own — an ambiguous person, a missing company, a likely duplicate — waits below for a decision, then enters the pipeline like any other lead."
+        description="Where leads come from and how well incoming messages become leads. Anything the system can't resolve on its own — an ambiguous person, a missing company, a likely duplicate — waits below for a decision, then enters the pipeline like any other lead."
       />
 
       <div className="kpi-row">
@@ -130,6 +130,7 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
 
       <Card className="page-card">
         <div className="intake-page__section-title">Sources</div>
+        <div className="table-scroll-wrap">
         <HTMLTable className="intake-sources" interactive>
           <thead>
             <tr>
@@ -177,6 +178,7 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
             })}
           </tbody>
         </HTMLTable>
+      </div>
       </Card>
 
       <Card className="page-card">

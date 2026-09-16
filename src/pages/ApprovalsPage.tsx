@@ -32,7 +32,8 @@ export function ApprovalsPage({ leads, acknowledgedIds, onAcknowledge, onOpenLea
         {overridden.length === 0 ? (
           <NonIdealState icon="tick-circle" title="Nothing to review" description="No unreviewed overrides right now." />
         ) : (
-          <HTMLTable className="approvals-page__table">
+          <div className="table-scroll-wrap">
+        <HTMLTable className="approvals-page__table">
             <thead>
               <tr>
                 <th>Lead</th>
@@ -70,6 +71,7 @@ export function ApprovalsPage({ leads, acknowledgedIds, onAcknowledge, onOpenLea
               ))}
             </tbody>
           </HTMLTable>
+      </div>
         )}
       </Card>
     </div>

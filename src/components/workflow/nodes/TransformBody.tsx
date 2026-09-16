@@ -1,5 +1,5 @@
 import { Button, HTMLSelect, InputGroup } from "@blueprintjs/core";
-import { TRANSFORM_SOURCES, TRANSFORM_TYPES, transformPreview, type TransformNode, type TransformType } from "../../../lib/workflowNodes";
+import { TRANSFORM_SOURCES, TRANSFORM_TYPES, friendlyLabel, transformPreview, type TransformNode, type TransformType } from "../../../lib/workflowNodes";
 import { NodeField } from "./NodeField";
 
 interface Props {
@@ -18,7 +18,7 @@ export function TransformBody({ node, onChange }: Props) {
         <HTMLSelect fill value={node.inputSource} onChange={(e) => onChange({ inputSource: e.target.value })}>
           {TRANSFORM_SOURCES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {friendlyLabel(s)}
             </option>
           ))}
         </HTMLSelect>

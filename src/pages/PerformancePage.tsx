@@ -40,7 +40,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
       <PageHeader
         section="Optimize"
         title="Performance"
-        description="Is the whole system improving sales outcomes? Volume in, speed of response, SLA discipline, who is converting, and whether routing and prioritization are earning their keep. Each panel links to the control that changes it."
+        description="Is the whole system improving sales outcomes? Volume in, speed of response, SLA discipline, who is converting, and whether assignment and prioritization are working. Each panel links to the control that changes it."
       />
 
       <div className="kpi-row">
@@ -77,7 +77,8 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
 
         <Card className="page-card">
           <SectionTitle title="Response & SLA" hint="How fast leads get a first touch, and compliance by tier." action={{ label: "Assignment & SLA", view: "assignment", onNavigate }} />
-          <HTMLTable className="perf__table">
+          <div className="table-scroll-wrap">
+        <HTMLTable className="perf__table">
             <thead>
               <tr>
                 <th>Tier</th>
@@ -106,6 +107,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
               ))}
             </tbody>
           </HTMLTable>
+      </div>
           <p className="perf__note">
             <Icon icon="info-sign" size={11} /> Median first response {formatHours(summary.medianResponseHours)} across leads that have been touched. Hot leads have a 1h window, Warm 4h, Cold 24h.
           </p>
@@ -156,7 +158,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
 
       <div className="perf__grid-2">
         <Card className="page-card">
-          <SectionTitle title="Routing performance" hint="How much assignment the engine handles alone, and how often humans agree with it." action={{ label: "Assignment Rules", view: "assignment-rules", onNavigate }} />
+          <SectionTitle title="Assignment performance" hint="How much assignment the system handles automatically, and how often humans agree with it." action={{ label: "Assignment Rules", view: "assignment-rules", onNavigate }} />
           <div className="perf__stats">
             <div className="perf__stat">
               <span className="perf__stat-value">{summary.routing.autoAssigned}</span>
@@ -187,7 +189,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
         </Card>
 
         <Card className="page-card">
-          <SectionTitle title="Model performance" hint="Does a higher tier actually win more often?" action={{ label: "Prioritization Model", view: "prioritization-model", onNavigate }} />
+          <SectionTitle title="Model performance" hint="Do higher-priority leads actually win more?" action={{ label: "Prioritization Model", view: "prioritization-model", onNavigate }} />
           <div className="perf__tiers">
             {funnel.map((row) => (
               <div key={row.tier} className="perf__tier">
@@ -206,7 +208,7 @@ export function PerformancePage({ leads, onNavigate, onViewRep }: PerformancePag
             <Icon icon={summary.model.healthy ? "tick-circle" : "warning-sign"} size={11} />{" "}
             {summary.model.healthy
               ? "Hot is out-converting Warm — prioritization is ordering work correctly."
-              : `Warm (${summary.model.warmWonRate}%) is out-converting Hot (${summary.model.hotWonRate}%) — the Hot threshold or scoring weights need attention.`}
+              : `Warm (${summary.model.warmWonRate}%) is out-converting Hot (${summary.model.hotWonRate}%) — the Hot cutoff or scoring weights need attention.`}
           </p>
         </Card>
       </div>

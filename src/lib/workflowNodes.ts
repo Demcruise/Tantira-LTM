@@ -117,20 +117,20 @@ export interface NodeMeta {
 export const NODE_META: Record<NodeKind, NodeMeta> = {
   "create-variable": {
     kind: "create-variable",
-    label: "Save a Value",
+    label: "Remember a value",
     icon: "variable",
     tag: "No writes",
     description: "Store a value to reference later in this workflow.",
-    example: "e.g. capture Trigger.Lead.score once, reuse it in later steps without recomputing.",
+    example: "e.g. capture the lead score once, reuse it in later steps without recomputing.",
   },
   "get-object-property": {
     kind: "get-object-property",
-    label: "Read a Field",
+    label: "Get lead detail",
     icon: "database",
     tag: "Read-only",
     tagIcon: "eye-open",
-    description: "Read a field off the lead or a previous step — no writes.",
-    example: "e.g. read Lead.company to pass into the enrichment step.",
+    description: "Read a field from the lead or a previous step — no writes.",
+    example: "e.g. read the company name to pass into the enrichment step.",
   },
   "use-llm": {
     kind: "use-llm",
@@ -152,20 +152,20 @@ export const NODE_META: Record<NodeKind, NodeMeta> = {
   },
   execute: {
     kind: "execute",
-    label: "Run a Function",
+    label: "Run a calculation",
     icon: "function",
     tag: "Custom function",
     tagIcon: "code",
-    description: "Run a custom function against the current step's inputs.",
-    example: "e.g. a territory-match function that isn't covered by the standard rule engine.",
+    description: "Run a custom calculation against the current step's inputs.",
+    example: "e.g. a territory-match calculation that isn't covered by the standard assignment rules.",
   },
   transform: {
     kind: "transform",
-    label: "Reshape Data",
+    label: "Reformat data",
     icon: "exchange",
     tag: "Data mapping",
     tagIcon: "flow-review",
-    description: "Reshape or map data between steps.",
+    description: "Reformat or map data between steps.",
     example: "e.g. map a raw webhook payload into the fields an action expects.",
   },
   condition: {
@@ -226,11 +226,11 @@ const LEAD_PARAM: ActionParamDef = { key: "lead", label: "Lead", required: true,
 
 export const ACTION_DEFS = {
   "Enrich Lead": {
-    params: [LEAD_PARAM, { key: "source", label: "Enrichment Source", defaultValue: "Clearbit API" }],
+    params: [LEAD_PARAM, { key: "source", label: "Enrichment Source", defaultValue: "Enrichment service" }],
     writes: ["Lead.company", "Lead.accountMatch"],
   },
   "Prioritize Lead": {
-    params: [LEAD_PARAM, { key: "model", label: "Prioritization Model", defaultValue: "v3 — Firmographic + Engagement" }],
+    params: [LEAD_PARAM, { key: "model", label: "Prioritization Model", defaultValue: "v3 — Company fit + Engagement" }],
     writes: ["Lead.score", "Lead.priority"],
   },
   "Assign Lead": {
@@ -389,6 +389,44 @@ export const BASE_VARIABLES = [
   "Compute Lead Score.Output",
   "Compute Lead Score.score",
 ];
+
+/** Display-only mapping: converts raw dot-path expressions to human-readable
+ * labels for dropdowns, menus, and placeholders. The underlying value stays
+ * unchanged — this is purely a display layer. */
+const FRIENDLY_LABELS: Record<string, string> = {
+  "Trigger.Lead": "Lead",
+  "Trigger.Lead.score": "Lead score",
+  "Trigger.Lead.company": "Company",
+  "Trigger.Lead.email": "Lead email",
+  "Trigger.Lead.source": "Lead source",
+  "Trigger.Lead.priority": "Lead priority",
+  "Trigger.Lead.accountMatch": "Account match status",
+  "Trigger.Lead.status": "Lead status",
+  "Trigger.Lead.region": "Region",
+  "Trigger.Lead.lastActivity": "Last activity",
+  "Trigger.RawWebhookPayload": "Raw webhook data",
+  "Enrich Lead Data.Output": "Enrichment result",
+  "Compute Lead Score.Output": "Score result",
+  "Compute Lead Score.score": "Lead score (computed)",
+};
+
+/** Convert a dot-path variable to a human-readable label. Falls back to a
+ * cleaned-up version of the raw string for dynamic output variables. */
+export function friendlyLabel(variable: string): string {
+  if (FRIENDLY_LABELS[variable]) return FRIENDLY_LABELS[variable];
+  // Dynamic output variables like "Enrich Lead Data.Output" → "Enrich Lead Data result"
+  if (variable.endsWith(".Output")) {
+    const nodeName = variable.slice(0, -".Output".length);
+    return `${nodeName} result`;
+  }
+  // Generic: "Trigger.Lead.someField" → "Some field"
+  const parts = variable.split(".");
+  if (parts.length >= 2) {
+    const lastPart = parts[parts.length - 1];
+    return lastPart.charAt(0).toUpperCase() + lastPart.slice(1).replace(/([A-Z])/g, " $1").trim();
+  }
+  return variable;
+}
 
 // Variables visible to a node: everything that appears before it in a depth-first walk.
 export function variablesBefore(nodes: WorkflowNode[], nodeId: string): string[] {

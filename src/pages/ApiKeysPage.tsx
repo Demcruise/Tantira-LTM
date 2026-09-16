@@ -43,7 +43,8 @@ export function ApiKeysPage({ keys, onGenerate, onRevoke }: ApiKeysPageProps) {
       />
 
       <Card className="page-card">
-      <HTMLTable className="api-keys-page__table">
+      <div className="table-scroll-wrap">
+        <HTMLTable className="api-keys-page__table">
         <thead>
           <tr>
             <th>Name</th>
@@ -78,6 +79,7 @@ export function ApiKeysPage({ keys, onGenerate, onRevoke }: ApiKeysPageProps) {
           ))}
         </tbody>
       </HTMLTable>
+      </div>
       </Card>
 
       <GenerateKeyDialog isOpen={generateOpen} onClose={() => setGenerateOpen(false)} onGenerate={onGenerate} />
