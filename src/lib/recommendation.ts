@@ -1,6 +1,6 @@
 import type { AssignmentRule, Lead, Priority, TierThresholds } from "../types";
 import { REPS } from "../data/reps";
-import { getEnrichmentData } from "./enrichment";
+import { deriveEnrichmentData } from "./enrichment";
 import { getRepLoad } from "./capacity";
 import { computeSlaStatus } from "./sla";
 import { assignByRules, summarizeConditions } from "./ruleEngine";
@@ -25,7 +25,7 @@ export interface LeadRecommendation {
 // "Why this lead matters" — the same explanation shown to reps in My Leads and to
 // ops in the recommendation card, so both personas see one story.
 export function explainLead(lead: Lead): string[] {
-  const data = getEnrichmentData(lead);
+  const data = deriveEnrichmentData(lead);
   const reasons: string[] = [];
   if (data.segment === "Enterprise") reasons.push(`Enterprise account (${data.employeeBand} employees)`);
   else if (data.segment === "Mid-market") reasons.push(`Mid-market (${data.employeeBand} employees)`);
@@ -40,7 +40,7 @@ export function explainLead(lead: Lead): string[] {
 }
 
 export function recommendFor(lead: Lead, leads: Lead[], rules: AssignmentRule[], thresholds: TierThresholds): LeadRecommendation {
-  const data = getEnrichmentData(lead);
+  const data = deriveEnrichmentData(lead);
   const priority = scoreToPriority(lead.score, thresholds);
   const confidence = priorityConfidence(lead.score, thresholds);
 

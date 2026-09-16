@@ -1,5 +1,5 @@
 import type { Lead, ScoringRule } from "../types";
-import { getEnrichmentData } from "./enrichment";
+import { deriveEnrichmentData } from "./enrichment";
 import { clampScore } from "./scoring";
 
 const FREE_EMAIL_DOMAINS = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com"];
@@ -15,10 +15,10 @@ function hash(seed: string, mod: number): number {
 // per-lead-stable hash — the same "fabricated but consistent" convention enrichment.ts
 // already uses, so a lead's breakdown doesn't change between renders.
 const RULE_MATCHERS: Record<string, (lead: Lead) => boolean> = {
-  "sr-1": (lead) => getEnrichmentData(lead).segment === "Enterprise",
+  "sr-1": (lead) => deriveEnrichmentData(lead).segment === "Enterprise",
   "sr-2": (lead) => lead.source === "Referral" || lead.source === "Partner",
   "sr-3": (lead) => hash(lead.id + "budget", 100) < 40,
-  "sr-4": (lead) => getEnrichmentData(lead).engagementEvents >= 3,
+  "sr-4": (lead) => deriveEnrichmentData(lead).engagementEvents >= 3,
   "sr-5": (lead) => hash(lead.id + "title", 100) < 25,
   "sr-6": (lead) => (Date.now() - new Date(lead.lastActivity).getTime()) / 86_400_000 >= 30,
   "sr-7": (lead) => hash(lead.id + "competitor", 100) < 15,

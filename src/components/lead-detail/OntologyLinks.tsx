@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon, Tag } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
 import type { Lead } from "../../types";
-import { getEnrichmentData } from "../../lib/enrichment";
+import { deriveEnrichmentData } from "../../lib/enrichment";
 import { OntologyGraph } from "./OntologyGraph";
 
 type StatusIntent = "success" | "warning" | "none";
@@ -18,7 +18,7 @@ interface EntityRow {
 }
 
 function buildRows(lead: Lead): EntityRow[] {
-  const data = getEnrichmentData(lead);
+  const data = deriveEnrichmentData(lead);
 
   return [
     {

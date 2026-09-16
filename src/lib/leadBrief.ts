@@ -1,5 +1,5 @@
 import type { Lead } from "../types";
-import { getEnrichmentData } from "./enrichment";
+import { deriveEnrichmentData } from "./enrichment";
 import { computeSlaStatus } from "./sla";
 import { isSnoozed } from "./leadActions";
 import { computeReason, REASON_ACTION } from "./needsAttention";
@@ -15,7 +15,7 @@ export interface LeadBrief {
 }
 
 function buildSummary(lead: Lead): string {
-  const data = getEnrichmentData(lead);
+  const data = deriveEnrichmentData(lead);
   const sla = computeSlaStatus(lead);
   const fit =
     data.segment === "Enterprise" ? "High-fit enterprise" : data.segment === "Mid-market" ? "Solid mid-market" : "Early-stage";

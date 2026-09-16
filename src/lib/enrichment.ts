@@ -34,7 +34,7 @@ export interface EnrichmentData {
   fields: EnrichmentField[];
 }
 
-export function getEnrichmentData(lead: Lead): EnrichmentData {
+export function deriveEnrichmentData(lead: Lead): EnrichmentData {
   const industry = INDUSTRIES[hashIndex(lead.id, INDUSTRIES.length)];
   const bandIndex = hashIndex(lead.id + "e", EMPLOYEE_BANDS.length);
   const employeeBand = EMPLOYEE_BANDS[bandIndex];

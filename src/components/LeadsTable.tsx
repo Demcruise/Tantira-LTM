@@ -5,7 +5,7 @@ import type { Lead } from "../types";
 import { PriorityTag, SegmentTag, StatusTag } from "./Tags";
 import { SlaBadge } from "./SlaBadge";
 import { Sparkline, activityBars } from "./Sparkline";
-import { getEnrichmentData } from "../lib/enrichment";
+import { deriveEnrichmentData } from "../lib/enrichment";
 
 interface LeadsTableProps {
   leads: Lead[];
@@ -67,14 +67,14 @@ const DATA_COLUMNS: DataColumn[] = [
     render: (lead) => lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>,
   },
   { key: "sla", name: "SLA", width: 130, minWidth: 750, render: (lead) => <SlaBadge lead={lead} /> },
-  { key: "segment", name: "Segment", width: 110, minWidth: 850, render: (lead) => <SegmentTag segment={getEnrichmentData(lead).segment} /> },
+  { key: "segment", name: "Segment", width: 110, minWidth: 850, render: (lead) => <SegmentTag segment={deriveEnrichmentData(lead).segment} /> },
   { key: "source", name: "Source", width: 120, minWidth: 950, render: (lead) => lead.source },
   {
     key: "activity",
     name: "Activity",
     width: 70,
     minWidth: 1040,
-    render: (lead) => <Sparkline values={activityBars(lead.id, getEnrichmentData(lead).engagementEvents)} />,
+    render: (lead) => <Sparkline values={activityBars(lead.id, deriveEnrichmentData(lead).engagementEvents)} />,
   },
   { key: "lastActivity", name: "Last Activity", width: 120, minWidth: 1160, render: (lead) => formatRelative(lead.lastActivity) },
 ];

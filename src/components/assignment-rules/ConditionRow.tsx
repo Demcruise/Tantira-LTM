@@ -4,6 +4,12 @@ import type { Condition, ConditionField, ConditionOperator } from "../../types";
 
 const OPERATORS: ConditionOperator[] = [">", "<", "=", "!=", "contains"];
 
+function findFieldDef(key: ConditionField) {
+  const def = FIELD_DEFS.find((f) => f.key === key);
+  if (!def) throw new Error(`Unknown condition field: ${key}`);
+  return def;
+}
+
 interface ConditionRowProps {
   condition: Condition;
   onChange: (next: Condition) => void;
@@ -11,7 +17,7 @@ interface ConditionRowProps {
 }
 
 export function ConditionRow({ condition, onChange, onRemove }: ConditionRowProps) {
-  const fieldDef = FIELD_DEFS.find((f) => f.key === condition.field)!;
+  const fieldDef = findFieldDef(condition.field);
 
   return (
     <div className="condition-row">
@@ -19,7 +25,7 @@ export function ConditionRow({ condition, onChange, onRemove }: ConditionRowProp
         value={condition.field}
         onChange={(e) => {
           const nextField = e.target.value as ConditionField;
-          const nextDef = FIELD_DEFS.find((f) => f.key === nextField)!;
+          const nextDef = findFieldDef(nextField);
           onChange({ ...condition, field: nextField, value: nextDef.options?.[0] ?? "" });
         }}
       >
@@ -40,7 +46,7 @@ export function ConditionRow({ condition, onChange, onRemove }: ConditionRowProp
 
       {fieldDef.type === "select" ? (
         <HTMLSelect value={String(condition.value)} onChange={(e) => onChange({ ...condition, value: e.target.value })}>
-          {fieldDef.options!.map((opt) => (
+          {fieldDef.options?.map((opt) => (
             <option key={opt} value={opt}>
               {opt}
             </option>

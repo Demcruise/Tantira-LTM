@@ -1,11 +1,11 @@
 import { Card, Checkbox, HTMLTable } from "@blueprintjs/core";
 import { NOTIFICATION_EVENTS } from "../data/notificationPrefs";
-import type { NotificationChannel, NotificationPrefMatrix } from "../types";
+import type { NotificationChannel, NotificationEventKey, NotificationPrefMatrix } from "../types";
 import { PageHeader } from "../components/PageHeader";
 
 interface NotificationPreferencesPageProps {
   matrix: NotificationPrefMatrix;
-  onToggle: (eventKey: string, channel: NotificationChannel, enabled: boolean) => void;
+  onToggle: (eventKey: NotificationEventKey, channel: NotificationChannel, enabled: boolean) => void;
 }
 
 export function NotificationPreferencesPage({ matrix, onToggle }: NotificationPreferencesPageProps) {

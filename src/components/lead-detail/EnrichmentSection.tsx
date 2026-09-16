@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Callout, Icon, Radio, RadioGroup, Spinner, Tooltip } from "@blueprintjs/core";
 import type { Lead } from "../../types";
-import { getEnrichmentData } from "../../lib/enrichment";
+import { deriveEnrichmentData } from "../../lib/enrichment";
 import { relativeTime } from "../../lib/relativeTime";
 import { OntologyLinks } from "./OntologyLinks";
 
@@ -32,7 +32,7 @@ interface EnrichmentSectionProps {
 export function EnrichmentSection({ lead, onCorrectMatch, onResolveAmbiguous }: EnrichmentSectionProps) {
   const [recalculating, setRecalculating] = useState(false);
   const [selectedCandidate, setSelectedCandidate] = useState<string>(lead.candidateAccounts[0] ?? "");
-  const data = getEnrichmentData(lead);
+  const data = deriveEnrichmentData(lead);
 
   function handleFlip() {
     setRecalculating(true);

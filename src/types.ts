@@ -111,7 +111,10 @@ export const SLA_HOURS_BY_PRIORITY: Record<Priority, number> = {
 
 // --- Enterprise admin: Team Members ---
 
-export type MemberRole = string; // role name — looked up against RoleDef[] for permissions and scope
+// Role name — looked up against RoleDef[] for permissions and scope.
+// Known system roles are listed explicitly for autocomplete; the `string & {}`
+// intersection allows custom user-created roles while keeping the union honest.
+export type MemberRole = "Admin" | "Sales Ops" | "Rep" | "Reporter" | (string & {});
 export type MemberStatus = "Active" | "Pending";
 
 export interface TeamMember {
@@ -193,11 +196,19 @@ export interface AppNotification {
 export type NotificationChannel = "inApp" | "email";
 
 export interface NotificationPrefDef {
-  key: string;
+  key: NotificationEventKey;
   label: string;
 }
 
-export type NotificationPrefMatrix = Record<string, Record<NotificationChannel, boolean>>;
+export type NotificationEventKey =
+  | "lead.needs_attention"
+  | "lead.sla_risk"
+  | "sync.conflict"
+  | "sso.config_changed"
+  | "team.invited"
+  | "permission.revoked";
+
+export type NotificationPrefMatrix = Record<NotificationEventKey, Record<NotificationChannel, boolean>>;
 
 export type AttentionReason = "sync_conflict" | "rep_over_capacity" | "ambiguous_match" | "sla_at_risk" | "awaiting_assignment";
 
