@@ -22,6 +22,12 @@ function Connector() {
   return <div className="wf-connector" />;
 }
 
+type FixedStage =
+  | { kind: "trigger"; id: string; name: string; eventLabel: string; source: string }
+  | { kind: "action"; id: string; name: string; actionIcon?: import("@blueprintjs/icons").IconName; actionLabel: string; fields: { label: string; value: string; required?: boolean }[]; configLink?: { label: string; onClick: () => void } }
+  | { kind: "conditional"; id: string; name: string; condition: { left: string; operator: string; right: string }; thenLabel: string; elseLabel: string; thenId: string; elseId: string; thenAction: Omit<Extract<FixedStage, { kind: "action" }>, "kind">; elseAction: Omit<Extract<FixedStage, { kind: "action" }>, "kind"> }
+  | { kind: "loop"; id: string; name: string; elements: string; elementVar: string; indexVar: string; child: Omit<Extract<FixedStage, { kind: "action" }>, "kind"> };
+
 interface WorkflowPageProps {
   leads: Lead[];
   nodes: WorkflowNode[];
@@ -50,6 +56,166 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   const activeTool = selectedTool ? NODE_META[selectedTool] : null;
   const dirty = !sameNodes(nodes, published.nodes);
   const previousVersion = getPreviousVersion(versions, published.version);
+
+  const fixedStages: FixedStage[] = [
+    { kind: "trigger", id: "trigger", name: "New Lead Captured", eventLabel: "Lead object created", source: "Lead" },
+    {
+      kind: "action",
+      id: "enrich",
+      name: "Enrich Lead Data",
+      actionIcon: "new-object",
+      actionLabel: "Enrich Lead (Clearbit + firmographics)",
+      fields: [
+        { label: "Lead", value: "Trigger.Lead", required: true },
+        { label: "Enrichment Source", value: "Clearbit API" },
+      ],
+    },
+    {
+      kind: "action",
+      id: "score",
+      name: "Compute Lead Score",
+      actionIcon: "calculator",
+      actionLabel: "Score Lead (rules + firmographic weight)",
+      fields: [
+        { label: "Lead", value: "Enrich Lead Data.Output", required: true },
+        { label: "Prioritization Model", value: "v3 — Firmographic + Engagement" },
+      ],
+      configLink: { label: "Scoring rules & tier thresholds — Prioritization Model", onClick: () => onNavigate("prioritization-model") },
+    },
+    {
+      kind: "conditional",
+      id: "route",
+      name: "Route by Priority",
+      condition: { left: "Compute Lead Score.score", operator: "≥", right: "75" },
+      thenLabel: "High priority",
+      elseLabel: "Standard priority",
+      thenId: "assign-senior",
+      elseId: "assign-round-robin",
+      thenAction: {
+        id: "assign-senior",
+        name: "Assign to Senior Rep",
+        actionIcon: "star",
+        actionLabel: "Assign Lead (senior pool, fast SLA)",
+        fields: [
+          { label: "Lead", value: "Compute Lead Score.Output", required: true },
+          { label: "Assignee Pool", value: "Senior AEs" },
+          { label: "SLA", value: "15 minutes" },
+        ],
+        configLink: { label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") },
+      },
+      elseAction: {
+        id: "assign-round-robin",
+        name: "Assign to Round-Robin Queue",
+        actionIcon: "people",
+        actionLabel: "Assign Lead (SDR round-robin)",
+        fields: [
+          { label: "Lead", value: "Compute Lead Score.Output", required: true },
+          { label: "Assignee Pool", value: "SDR Queue" },
+          { label: "SLA", value: "4 hours" },
+        ],
+        configLink: { label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") },
+      },
+    },
+    {
+      kind: "loop",
+      id: "notify",
+      name: "Notify Stakeholders",
+      elements: "assignedReps",
+      elementVar: "Rep",
+      indexVar: "Index",
+      child: {
+        id: "notify-send",
+        name: "Send Assignment Notification",
+        actionIcon: "notifications",
+        actionLabel: "Notify Rep (Slack DM)",
+        fields: [
+          { label: "Recipient", value: "Rep", required: true },
+          { label: "Channel", value: "Slack DM" },
+        ],
+      },
+    },
+    {
+      kind: "action",
+      id: "update-crm",
+      name: "Update CRM Status",
+      actionIcon: "tick-circle",
+      actionLabel: "Update Lead Status",
+      fields: [
+        { label: "Lead", value: "Trigger.Lead", required: true },
+        { label: "Status", value: "Assigned" },
+        { label: "Last Triaged At", value: "now()" },
+      ],
+      configLink: { label: "Sync health & conflicts — Connections", onClick: () => onNavigate("connections") },
+    },
+  ];
+
+  function renderFixedStage(stage: FixedStage) {
+    switch (stage.kind) {
+      case "trigger":
+        return <TriggerBlock name={stage.name} eventLabel={stage.eventLabel} source={stage.source} dryRunStatus={status[stage.id]} dryRunDetail={detail(stage.id)} />;
+      case "action":
+        return (
+          <ActionBlock
+            name={stage.name}
+            actionIcon={stage.actionIcon}
+            actionLabel={stage.actionLabel}
+            outputLabel="Output"
+            fields={stage.fields}
+            dryRunStatus={status[stage.id]}
+            dryRunDetail={detail(stage.id)}
+            configLink={stage.configLink}
+          />
+        );
+      case "conditional":
+        return (
+          <ConditionalBlock
+            name={stage.name}
+            condition={stage.condition}
+            thenLabel={stage.thenLabel}
+            elseLabel={stage.elseLabel}
+            dryRunStatus={status[stage.id]}
+            dryRunDetail={detail(stage.id)}
+            branchTaken={branchTaken}
+            thenChildren={
+              <ActionBlock
+                nested
+                name={stage.thenAction.name}
+                actionIcon={stage.thenAction.actionIcon}
+                actionLabel={stage.thenAction.actionLabel}
+                fields={stage.thenAction.fields}
+                dryRunStatus={status[stage.thenAction.id]}
+                dryRunDetail={detail(stage.thenAction.id)}
+                configLink={stage.thenAction.configLink}
+              />
+            }
+            elseChildren={
+              <ActionBlock
+                nested
+                name={stage.elseAction.name}
+                actionIcon={stage.elseAction.actionIcon}
+                actionLabel={stage.elseAction.actionLabel}
+                fields={stage.elseAction.fields}
+                dryRunStatus={status[stage.elseAction.id]}
+                dryRunDetail={detail(stage.elseAction.id)}
+                configLink={stage.elseAction.configLink}
+              />
+            }
+          />
+        );
+      case "loop":
+        return (
+          <LoopBlock name={stage.name} elements={stage.elements} elementVar={stage.elementVar} indexVar={stage.indexVar} dryRunStatus={status[stage.id]} dryRunDetail={detail(stage.id)}>
+            <ActionBlock
+              nested
+              name={stage.child.name}
+              actionIcon={stage.child.actionIcon}
+              actionLabel={stage.child.actionLabel}
+              fields={stage.child.fields}
+            />
+          </LoopBlock>
+        );
+    }
+  }
 
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const runsThisWeek = leads.filter((l) => new Date(l.createdAt).getTime() >= weekAgo).length;
@@ -177,108 +343,12 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
           />
         )}
 
-        <TriggerBlock name="New Lead Captured" eventLabel="Lead object created" source="Lead" dryRunStatus={status["trigger"]} dryRunDetail={detail("trigger")} />
-        <Connector />
-
-        <ActionBlock
-          name="Enrich Lead Data"
-          actionIcon="new-object"
-          actionLabel="Enrich Lead (Clearbit + firmographics)"
-          outputLabel="Output"
-          fields={[
-            { label: "Lead", value: "Trigger.Lead", required: true },
-            { label: "Enrichment Source", value: "Clearbit API" },
-          ]}
-          dryRunStatus={status["enrich"]}
-          dryRunDetail={detail("enrich")}
-        />
-        <Connector />
-
-        <ActionBlock
-          name="Compute Lead Score"
-          actionIcon="calculator"
-          actionLabel="Score Lead (rules + firmographic weight)"
-          outputLabel="Output"
-          fields={[
-            { label: "Lead", value: "Enrich Lead Data.Output", required: true },
-            { label: "Prioritization Model", value: "v3 — Firmographic + Engagement" },
-          ]}
-          dryRunStatus={status["score"]}
-          dryRunDetail={detail("score")}
-          configLink={{ label: "Scoring rules & tier thresholds — Prioritization Model", onClick: () => onNavigate("prioritization-model") }}
-        />
-        <Connector />
-
-        <ConditionalBlock
-          name="Route by Priority"
-          condition={{ left: "Compute Lead Score.score", operator: "≥", right: "75" }}
-          thenLabel="High priority"
-          elseLabel="Standard priority"
-          dryRunStatus={status["route"]}
-          dryRunDetail={detail("route")}
-          branchTaken={branchTaken}
-          thenChildren={
-            <ActionBlock
-              nested
-              name="Assign to Senior Rep"
-              actionIcon="star"
-              actionLabel="Assign Lead (senior pool, fast SLA)"
-              fields={[
-                { label: "Lead", value: "Compute Lead Score.Output", required: true },
-                { label: "Assignee Pool", value: "Senior AEs" },
-                { label: "SLA", value: "15 minutes" },
-              ]}
-              dryRunStatus={status["assign-senior"]}
-              dryRunDetail={detail("assign-senior")}
-              configLink={{ label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") }}
-            />
-          }
-          elseChildren={
-            <ActionBlock
-              nested
-              name="Assign to Round-Robin Queue"
-              actionIcon="people"
-              actionLabel="Assign Lead (SDR round-robin)"
-              fields={[
-                { label: "Lead", value: "Compute Lead Score.Output", required: true },
-                { label: "Assignee Pool", value: "SDR Queue" },
-                { label: "SLA", value: "4 hours" },
-              ]}
-              dryRunStatus={status["assign-round-robin"]}
-              dryRunDetail={detail("assign-round-robin")}
-              configLink={{ label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") }}
-            />
-          }
-        />
-        <Connector />
-
-        <LoopBlock name="Notify Stakeholders" elements="assignedReps" elementVar="Rep" indexVar="Index" dryRunStatus={status["notify"]} dryRunDetail={detail("notify")}>
-          <ActionBlock
-            nested
-            name="Send Assignment Notification"
-            actionIcon="notifications"
-            actionLabel="Notify Rep (Slack DM)"
-            fields={[
-              { label: "Recipient", value: "Rep", required: true },
-              { label: "Channel", value: "Slack DM" },
-            ]}
-          />
-        </LoopBlock>
-        <Connector />
-
-        <ActionBlock
-          name="Update CRM Status"
-          actionIcon="tick-circle"
-          actionLabel="Update Lead Status"
-          fields={[
-            { label: "Lead", value: "Trigger.Lead", required: true },
-            { label: "Status", value: "Assigned" },
-            { label: "Last Triaged At", value: "now()" },
-          ]}
-          dryRunStatus={status["update-crm"]}
-          dryRunDetail={detail("update-crm")}
-          configLink={{ label: "Sync health & conflicts — Connections", onClick: () => onNavigate("connections") }}
-        />
+        {fixedStages.map((stage, i) => (
+          <div key={stage.id}>
+            {i > 0 && <Connector />}
+            {renderFixedStage(stage)}
+          </div>
+        ))}
 
         {nodes.map((node, index) => (
           <div key={node.id}>
