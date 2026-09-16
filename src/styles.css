@@ -999,6 +999,10 @@ body {
   gap: 20px;
 }
 
+.settings-page {
+  max-width: 760px;
+}
+
 .prioritization-page {
   display: flex;
   gap: 20px;
@@ -2299,7 +2303,7 @@ body {
 
 .command-center-page__nav-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 12px;
   margin-top: 8px;
 }
@@ -5467,6 +5471,9 @@ body {
   align-items: flex-end;
   gap: 6px;
   flex-shrink: 0;
+  /* Fixed so the right edge (and the "Open" link under it) lands at the same
+     x on every row, whether or not a primary action button is present. */
+  min-width: 100px;
 }
 
 /* Suggested action as a real control */
