@@ -35,6 +35,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { AppSidebar } from "./components/AppSidebar";
 import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { REPS } from "./data/reps";
 import { CURRENT_USER } from "./data/team";
 import { hasPermission, PERMISSIONS, resolveRoleId, type PermissionKey } from "./data/permissions";
@@ -616,6 +617,7 @@ export function App() {
   }
 
   return (
+    <ErrorBoundary>
     <div className="app-shell app-shell--sidebar">
       <div className="app-sidebar">
         <AppSidebar
@@ -899,5 +901,6 @@ export function App() {
 
       {view !== "lead-full" && <LeadDetailPanel {...leadDetailProps} />}
     </div>
+    </ErrorBoundary>
   );
 }
