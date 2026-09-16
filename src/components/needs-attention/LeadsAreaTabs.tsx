@@ -1,4 +1,4 @@
-import type { AppView } from "../AppSidebar";
+import type { AppView } from "../../types";
 
 const TABS: { view: AppView; label: string }[] = [
   { view: "needs-attention", label: "Attention Center" },

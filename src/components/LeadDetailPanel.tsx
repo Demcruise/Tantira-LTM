@@ -204,7 +204,7 @@ export function LeadDetailPanel({
   }
 
   return (
-    <Drawer isOpen={lead !== null} onClose={onClose} size="460px" position="right">
+    <Drawer isOpen={lead !== null} onClose={onClose} size="clamp(420px, 38vw, 640px)" position="right">
       {content}
     </Drawer>
   );

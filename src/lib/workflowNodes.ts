@@ -283,11 +283,8 @@ export function defaultFunctionInputs(fn: FunctionName): Record<string, string> 
   return Object.fromEntries(FUNCTION_DEFS[fn].inputs.map((i) => [i.key, i.defaultValue]));
 }
 
-let counter = 0;
-
 export function createNode(kind: NodeKind): WorkflowNode {
-  counter += 1;
-  const id = `node-${Date.now()}-${counter}`;
+  const id = `node-${Date.now()}-${Math.floor(Math.random() * 1_000_000)}`;
   switch (kind) {
     case "create-variable":
       return { id, kind, name: "leadScoreCache", type: "Number", expression: "Trigger.Lead.score" };

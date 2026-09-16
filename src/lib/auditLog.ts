@@ -7,8 +7,6 @@ const USER_AGENTS = [
   "Firefox 130 / Windows",
 ];
 
-let counter = 0;
-
 function pseudoIp(seed: number): string {
   return `10.${(seed * 7) % 256}.${(seed * 13) % 256}.${(seed * 3 + 1) % 256}`;
 }
@@ -21,17 +19,17 @@ export function createAuditEntry(params: {
   after?: string;
   timestamp?: string;
 }): AuditLogEntry {
-  counter += 1;
+  const seq = Math.floor(Math.random() * 1_000_000);
   return {
-    id: `AL-${Date.now()}-${counter}`,
+    id: `AL-${Date.now()}-${seq}`,
     timestamp: params.timestamp ?? new Date().toISOString(),
     actor: params.actor,
     action: params.action,
     object: params.object,
     before: params.before,
     after: params.after,
-    ip: pseudoIp(counter),
-    userAgent: USER_AGENTS[counter % USER_AGENTS.length],
+    ip: pseudoIp(seq),
+    userAgent: USER_AGENTS[seq % USER_AGENTS.length],
   };
 }
 

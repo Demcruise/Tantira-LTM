@@ -1,6 +1,6 @@
 import { Button, Card, H4, Icon } from "@blueprintjs/core";
 import type { Lead } from "../../types";
-import type { AppView, FilterPreset } from "../AppSidebar";
+import type { AppView, FilterPreset } from "../../types";
 import { buildFunnelStages, withDropOff } from "../../lib/pipeline";
 
 function dropOffColor(pct: number): string {

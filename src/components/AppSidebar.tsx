@@ -4,8 +4,6 @@ import type { IconName } from "@blueprintjs/icons";
 import type { AppView, FilterPreset } from "../types";
 import type { PermissionKey } from "../data/permissions";
 
-export type { AppView, FilterPreset };
-
 const cx = (...c: (string | false | null | undefined)[]) =>
   c.filter(Boolean).join(" ");
 

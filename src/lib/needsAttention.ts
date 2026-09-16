@@ -3,7 +3,6 @@ import { getRepLoad } from "./capacity";
 import { computeSlaStatus } from "./sla";
 import { isSnoozed } from "./leadActions";
 
-export type { AttentionReason };
 
 export const REASON_LABEL: Record<AttentionReason, string> = {
   sync_conflict: "Sync failed",

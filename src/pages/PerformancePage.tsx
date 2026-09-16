@@ -1,6 +1,6 @@
 import { Button, Card, H4, HTMLTable, Icon, Tag } from "@blueprintjs/core";
 import type { Lead } from "../types";
-import type { AppView, FilterPreset } from "../components/AppSidebar";
+import type { AppView, FilterPreset } from "../types";
 import { dailyVolume, formatHours, performanceSummary, repPerformance, slaByTier, sourcePerformance } from "../lib/analytics";
 import { buildTierFunnel } from "../lib/feedback";
 import { PageHeader } from "../components/PageHeader";

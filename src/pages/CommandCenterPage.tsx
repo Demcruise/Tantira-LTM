@@ -1,6 +1,6 @@
 import { Button, Card, H4, Icon } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
-import type { AppView, FilterPreset } from "../components/AppSidebar";
+import type { AppView, FilterPreset } from "../types";
 import type { AutoProcessedEntry, CrmConnection, Lead } from "../types";
 import { PageHeader } from "../components/PageHeader";
 import { KpiCard } from "../components/KpiRow";

@@ -1,6 +1,6 @@
 import { Icon } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
-import type { AttentionReason } from "../../lib/needsAttention";
+import type { AttentionReason } from "../../types";
 import { REASON_LABEL } from "../../lib/needsAttention";
 
 const REASON_ICON: Record<AttentionReason, IconName> = {
