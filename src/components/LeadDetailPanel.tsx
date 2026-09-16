@@ -23,6 +23,20 @@ import { ActivityTimeline } from "./lead-detail/ActivityTimeline";
 
 type LeadConflict = SyncConflict & { connectionId: string; connectionName: string };
 
+function describeWritebackState(state: Lead["writebackState"], conflict: LeadConflict | null): string {
+  if (conflict) return "Sync conflict";
+  switch (state) {
+    case "synced":
+      return "Synced";
+    case "syncing":
+      return "Syncing…";
+    case "failed":
+      return "Failed";
+    default:
+      return "Not started";
+  }
+}
+
 interface LeadDetailPanelProps {
   lead: Lead | null;
   leads: Lead[];
@@ -92,15 +106,7 @@ export function LeadDetailPanel({
       : "Unassigned";
 
   const writebackFlagged = lead.writebackState === "failed" || conflict !== null;
-  const writebackSummary = conflict
-    ? "Sync conflict"
-    : lead.writebackState === "synced"
-      ? "Synced"
-      : lead.writebackState === "syncing"
-        ? "Syncing…"
-        : lead.writebackState === "failed"
-          ? "Failed"
-          : "Not started";
+  const writebackSummary = describeWritebackState(lead.writebackState, conflict);
 
   const content = (
     <div className="lead-detail">

@@ -20,6 +20,9 @@ export interface SlaStatus {
   label: string;
 }
 
+// At-risk when 25% or less of the SLA window remains.
+const SLA_AT_RISK_FRACTION = 0.25;
+
 export function computeSlaStatus(lead: Pick<Lead, "priority" | "createdAt">, now: number = Date.now()): SlaStatus {
   const slaHours = SLA_HOURS_BY_PRIORITY[lead.priority];
   const deadline = new Date(lead.createdAt).getTime() + slaHours * 60 * 60 * 1000;
@@ -28,7 +31,7 @@ export function computeSlaStatus(lead: Pick<Lead, "priority" | "createdAt">, now
   if (remainingHours <= 0) {
     return { risk: "overdue", remainingHours, label: `Overdue ${formatSlaHours(remainingHours)}` };
   }
-  if (remainingHours <= slaHours * 0.25) {
+  if (remainingHours <= slaHours * SLA_AT_RISK_FRACTION) {
     return { risk: "atRisk", remainingHours, label: `${formatSlaHours(remainingHours)} left` };
   }
   return { risk: "onTrack", remainingHours, label: `${formatSlaHours(remainingHours)} left` };

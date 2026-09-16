@@ -24,7 +24,17 @@ export function assignByRules(allLeads: Lead[], rules: AssignmentRule[], targets
     const rule = findMatchingRule(leadToSample(lead), rules);
     if (!rule) continue;
     const t = rule.assignTarget;
-    const pool = t.type === "rep" && t.repId ? [t.repId] : t.type === "queue" && t.queueId ? (QUEUE_REPS[t.queueId] ?? []) : (t.roundRobinGroup ?? []);
+    let pool: string[];
+    switch (t.type) {
+      case "rep":
+        pool = t.repId ? [t.repId] : [];
+        break;
+      case "queue":
+        pool = t.queueId ? (QUEUE_REPS[t.queueId] ?? []) : [];
+        break;
+      default:
+        pool = t.roundRobinGroup ?? [];
+    }
     const eligible = pool.filter((rep) => !t.capacityAware || (load.get(rep) ?? 0) < (capacity.get(rep) ?? 0));
     if (eligible.length === 0) continue;
     const assignee = eligible.reduce((best, rep) => ((load.get(rep) ?? 0) < (load.get(best) ?? 0) ? rep : best), eligible[0]);
