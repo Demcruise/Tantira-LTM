@@ -2961,6 +2961,14 @@ body {
   width: 100%;
 }
 
+.roles-page__table thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
+  box-shadow: 0 1px 0 #d3d8de;
+}
+
 .roles-page__perm-col {
   white-space: nowrap;
 }
@@ -6022,5 +6030,24 @@ textarea.wf-node-code {
   color: #5f6b7c;
 }
 .notif-prefs-page__table tbody tr:nth-child(even) {
+  background: #f8f9fa;
+}
+
+/* Leads Table: right-align numeric columns (SLA, Activity, Last Activity) */
+.leads-table2__cell-click--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Inbound Sources: right-align numeric columns */
+.intake-sources__num {
+  text-align: right;
+}
+.intake-sources thead th.intake-sources__num {
+  text-align: right;
+}
+
+/* Roles & Permissions: zebra striping on permission rows */
+.roles-page__table tbody tr:not(.roles-page__module-row):nth-child(even) {
   background: #f8f9fa;
 }

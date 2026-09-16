@@ -136,10 +136,10 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
             <tr>
               <th>Source</th>
               <th>Status</th>
-              <th>Received</th>
-              <th>Extracted</th>
-              <th>Merged at capture</th>
-              <th>Unresolved</th>
+              <th className="intake-sources__num">Received</th>
+              <th className="intake-sources__num">Extracted</th>
+              <th className="intake-sources__num">Merged at capture</th>
+              <th className="intake-sources__num">Unresolved</th>
               <th>Extraction rate</th>
               <th>Last event</th>
             </tr>
@@ -160,10 +160,10 @@ export function IntakePage({ sources, items, onResolve, onOpenLead }: IntakePage
                       {st.label}
                     </Tag>
                   </td>
-                  <td>{s.received}</td>
-                  <td>{s.extracted}</td>
-                  <td className="intake-sources__muted">{s.collapsedDuplicates}</td>
-                  <td>{unresolvedBySource.get(s.id) ?? 0}</td>
+                  <td className="intake-sources__num">{s.received}</td>
+                  <td className="intake-sources__num">{s.extracted}</td>
+                  <td className="intake-sources__num intake-sources__muted">{s.collapsedDuplicates}</td>
+                  <td className="intake-sources__num">{unresolvedBySource.get(s.id) ?? 0}</td>
                   <td>
                     <div className="intake-sources__rate">
                       <div className="intake-sources__rate-track">

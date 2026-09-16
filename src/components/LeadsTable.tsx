@@ -58,6 +58,7 @@ interface DataColumn {
   minWidth: number;
   render: (lead: Lead) => React.ReactNode;
   sortValue: (lead: Lead) => string | number;
+  align?: "left" | "right";
 }
 
 // Always shown: checkbox + Lead. Everything below drops out, in this order,
@@ -73,7 +74,7 @@ const DATA_COLUMNS: DataColumn[] = [
     render: (lead) => lead.assignedTo ?? <span className="leads-table__unassigned">Unassigned</span>,
     sortValue: (lead) => lead.assignedTo ?? "zzz",
   },
-  { key: "sla", name: "SLA", width: 130, minWidth: 750, render: (lead) => <SlaBadge lead={lead} />, sortValue: (lead) => computeSlaStatus(lead).remainingHours },
+  { key: "sla", name: "SLA", width: 130, minWidth: 750, render: (lead) => <SlaBadge lead={lead} />, sortValue: (lead) => computeSlaStatus(lead).remainingHours, align: "right" },
   { key: "segment", name: "Segment", width: 110, minWidth: 850, render: (lead) => <SegmentTag segment={deriveEnrichmentData(lead).segment} />, sortValue: (lead) => deriveEnrichmentData(lead).segment },
   { key: "source", name: "Source", width: 120, minWidth: 950, render: (lead) => lead.source, sortValue: (lead) => lead.source },
   {
@@ -83,8 +84,9 @@ const DATA_COLUMNS: DataColumn[] = [
     minWidth: 1040,
     render: (lead) => <Sparkline values={activityBars(lead.id, deriveEnrichmentData(lead).engagementEvents)} />,
     sortValue: (lead) => deriveEnrichmentData(lead).engagementEvents,
+    align: "right",
   },
-  { key: "lastActivity", name: "Last Activity", width: 120, minWidth: 1160, render: (lead) => formatRelative(lead.lastActivity), sortValue: (lead) => new Date(lead.lastActivity).getTime() },
+  { key: "lastActivity", name: "Last Activity", width: 120, minWidth: 1160, render: (lead) => formatRelative(lead.lastActivity), sortValue: (lead) => new Date(lead.lastActivity).getTime(), align: "right" },
 ];
 
 export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead, onToggleChecked, onToggleAll, onClearFilters }: LeadsTableProps) {
@@ -231,9 +233,10 @@ export function LeadsTable({ leads, loading, selectedId, checkedIds, onOpenLead,
               )}
               cellRenderer={(rowIndex) => {
                 const lead = sortedLeads[rowIndex];
+                const alignClass = col.align === "right" ? " leads-table2__cell-click--right" : "";
                 return (
                   <Cell className={rowClass(lead)} interactive={false}>
-                    <div className="leads-table2__cell-click" onClick={() => onOpenLead(lead.id)}>
+                    <div className={`leads-table2__cell-click${alignClass}`} onClick={() => onOpenLead(lead.id)}>
                       {col.render(lead)}
                     </div>
                   </Cell>
