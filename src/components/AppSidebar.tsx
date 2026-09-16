@@ -3,6 +3,7 @@ import { Icon } from "@blueprintjs/core";
 import type { IconName } from "@blueprintjs/icons";
 import type { AppView, FilterPreset } from "../types";
 import type { PermissionKey } from "../data/permissions";
+import { SIDEBAR_COLLAPSE_WIDTH } from "../lib/breakpoints";
 
 const cx = (...c: (string | false | null | undefined)[]) =>
   c.filter(Boolean).join(" ");
@@ -160,7 +161,7 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
   const [sectionIndex, setSectionIndex] = useState(Math.max(initialSectionIndex, 0));
   // Default to collapsed on laptop-width screens so the sidebar doesn't compound
   // other components' responsive column-dropping — the toggle still works either way.
-  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < 1366);
+  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < SIDEBAR_COLLAPSE_WIDTH);
   const section = visibleSections[Math.min(sectionIndex, visibleSections.length - 1)];
 
   function isItemActive(item: NavItem): boolean {

@@ -4744,6 +4744,9 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex-shrink: 0;
+  min-width: 100px;
+  justify-content: flex-end;
 }
 
 .attention-footnote {

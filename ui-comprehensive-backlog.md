@@ -20,7 +20,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 
 **3. Command Center "Where to go next" row length** — this is bug N1. Fixing `auto-fill`→`auto-fit` makes the 5 cards fill the row width the callout above it already uses, so they end up visually matched without hardcoding a width relationship between two unrelated elements.
 
-**4. Attention Center row layout** — current rows already carry tag + name + reason badge + SLA badge + actions, which is the same information the reference's avatar-table shows. Apply the same fixed-width action-column treatment as N2 for consistency between the two "queue" pages (Attention Center and My Leads share a visual language already; this closes the last gap between them).
+**4. Attention Center row layout** — ~~current rows already carry tag + name + reason badge + SLA badge + actions, which is the same information the reference's avatar-table shows. Apply the same fixed-width action-column treatment as N2 for consistency between the two "queue" pages (Attention Center and My Leads share a visual language already; this closes the last gap between them).~~ **DONE** — `.attention-row__actions` given `min-width: 100px` + `justify-content: flex-end` (same treatment as N2's `.work-card__actions`). The "Open" link now lands at the same x on every row regardless of whether a primary action button is present. Verified: typecheck + build pass.
 
 **5. My Leads row precision** — bug N2 above.
 
@@ -52,7 +52,7 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 - **Text wrapping / overflow bugs**: DOM-swept Attention Center, Command Center, My Leads, SSO, Leads Table, Workflow Builder at 1920 and 1024px — zero raw overflow found beyond N1–N3 above (which are layout gaps, not text clipping). A few pages (Inbound Sources, API Keys, Team Members, Roles & Permissions, Notification Preferences) weren't DOM-swept this pass — reasonable to assume similar health given they share the same `HTMLTable`/`Card` patterns already verified elsewhere, but flagging as not literally checked.
 - **UX writing**: covered in the first pass ([ui-polish-backlog.md](ui-polish-backlog.md), items A1–A4) — Workflow Builder jargon and Writeback→CRM Sync wording already fixed. Nothing newly jargon-heavy spotted this pass; "Sync Issues", "Automated (7d)" and similar KPI labels read fine as short data labels, not prose.
 - **Component-length / row consistency**: N1 and N2 are the concrete finds. Broader pattern worth adopting: the Leads Table, My Leads, and Attention Center are the three "row of things" pages — worth eventually sharing one row-layout convention (fixed action-column width) instead of each having grown it independently.
-- **Cross-device breakpoints**: B1 (table), B2 (drawer), B3 (sidebar) each hand-picked their own breakpoint numbers (650–1366px) directly in their component files — works, but there's no single source of truth for "what counts as a laptop-width screen" if a fourth component needs to make the same call. **Suggested small follow-up**: extract shared constants (e.g. `src/lib/breakpoints.ts` with `LAPTOP_WIDTH = 1366` etc.) so future responsive work references one definition instead of re-guessing a number.
+- **Cross-device breakpoints**: B1 (table), B2 (drawer), B3 (sidebar) each hand-picked their own breakpoint numbers (650–1366px) directly in their component files — works, but there's no single source of truth for "what counts as a laptop-width screen" if a fourth component needs to make the same call. ~~**Suggested small follow-up**: extract shared constants (e.g. `src/lib/breakpoints.ts` with `LAPTOP_WIDTH = 1366` etc.) so future responsive work references one definition instead of re-guessing a number.~~ **DONE** — Created `src/lib/breakpoints.ts` with `SIDEBAR_COLLAPSE_WIDTH = 1366` and `MOBILE_DRAWER_WIDTH = 768`. AppSidebar now imports and uses `SIDEBAR_COLLAPSE_WIDTH` instead of the hardcoded `1366`.
 
 ## Suggested sequencing
 
@@ -64,4 +64,4 @@ Verified this session by live DOM inspection (not guesses) — 3 new concrete bu
 6. ~~#11, #15, #16~~ **DONE** — API Keys scope badges, Notification tabs + per-row menu, Notification Preferences descriptions + zebra striping.
 7. ~~#6, #7, #13~~ **DONE** — polish-only, lowest urgency.
 8. ~~#9~~ **DONE** — visual polish pass on daily volume chart (gradient bars, hover state, gridline).
-9. Breakpoint constants extraction — do opportunistically alongside #1/#10b since that's where the next breakpoint decision would get made anyway.
+9. ~~Breakpoint constants extraction~~ **DONE** — `src/lib/breakpoints.ts` with `SIDEBAR_COLLAPSE_WIDTH` + `MOBILE_DRAWER_WIDTH`, AppSidebar now uses it.
