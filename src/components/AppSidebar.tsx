@@ -162,7 +162,7 @@ const sections: NavSection[] = [
   },
 ];
 
-interface AppSidebar4Props {
+interface AppSidebarProps {
   activeView: AppView;
   activeFilters?: FilterPreset;
   onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
@@ -175,7 +175,7 @@ interface AppSidebar4Props {
   permissions?: Set<PermissionKey>;
 }
 
-export default function AppSidebar4({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebar4Props) {
+export default function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebarProps) {
   function isItemVisible(item: NavItem): boolean {
     return !item.requiredPermission || (permissions?.has(item.requiredPermission) ?? true);
   }

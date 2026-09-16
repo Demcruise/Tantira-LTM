@@ -4,7 +4,7 @@ import { PageHeader } from "../components/PageHeader";
 import type { AutoProcessedEntry, AutoProcessedEventType } from "../types";
 import { EVENT_ICON, EVENT_LABEL } from "../lib/autoProcessedLog";
 import { LeadsAreaTabs } from "../components/needs-attention/LeadsAreaTabs";
-import type { AppView } from "../components/app-sidebar-4";
+import type { AppView } from "../components/AppSidebar";
 
 type DateRange = "24h" | "7d" | "30d" | "90d" | "all";
 

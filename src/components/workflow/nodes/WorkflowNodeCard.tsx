@@ -33,7 +33,9 @@ export function WorkflowNodeCard(props: WorkflowNodeCardProps) {
   const meta = NODE_META[node.kind];
   const variables = variablesBefore(rootNodes, node.id);
   const status = statusByNode[node.id];
-  const patch = (p: Partial<WorkflowNode>) => onChange({ ...node, ...p } as WorkflowNode);
+  function patch<T extends WorkflowNode>(current: T, p: Partial<T>) {
+    onChange({ ...current, ...p });
+  }
 
   function renderBranch(nodes: WorkflowNode[], conditionId: string, branch: "then" | "else") {
     return (
@@ -51,28 +53,28 @@ export function WorkflowNodeCard(props: WorkflowNodeCardProps) {
   function body() {
     switch (node.kind) {
       case "create-variable":
-        return <CreateVariableBody node={node} variables={variables} onChange={patch} />;
+        return <CreateVariableBody node={node} variables={variables} onChange={(p) => patch(node, p)} />;
       case "get-object-property":
-        return <GetObjectPropertyBody node={node} onChange={patch} />;
+        return <GetObjectPropertyBody node={node} onChange={(p) => patch(node, p)} />;
       case "use-llm":
-        return <UseLlmBody node={node} variables={variables} onChange={patch} />;
+        return <UseLlmBody node={node} variables={variables} onChange={(p) => patch(node, p)} />;
       case "apply-action":
-        return <ApplyActionBody node={node} variables={variables} onChange={patch} />;
+        return <ApplyActionBody node={node} variables={variables} onChange={(p) => patch(node, p)} />;
       case "execute":
-        return <ExecuteBody node={node} variables={variables} onChange={patch} />;
+        return <ExecuteBody node={node} variables={variables} onChange={(p) => patch(node, p)} />;
       case "transform":
-        return <TransformBody node={node} onChange={patch} />;
+        return <TransformBody node={node} onChange={(p) => patch(node, p)} />;
       case "wait":
-        return <WaitBody node={node} onChange={patch} />;
+        return <WaitBody node={node} onChange={(p) => patch(node, p)} />;
       case "end":
-        return <EndBody node={node} onChange={patch} />;
+        return <EndBody node={node} onChange={(p) => patch(node, p)} />;
       case "condition": {
         const detail = detailFor(node.id) ?? "";
         const branchTaken = status === "pass" ? (detail.includes("→ Then") ? "then" : detail.includes("→ Else") ? "else" : undefined) : undefined;
         return (
           <ConditionBody
             node={node}
-            onChange={patch}
+            onChange={(p) => patch(node, p)}
             branchTaken={branchTaken}
             thenChildren={renderBranch(node.thenNodes, node.id, "then")}
             elseChildren={renderBranch(node.elseNodes, node.id, "else")}

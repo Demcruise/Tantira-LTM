@@ -1,4 +1,4 @@
-import type { AppView } from "../components/app-sidebar-4";
+import type { AppView } from "../components/AppSidebar";
 
 // Where each role lands after login. Falls back to Attention Center for any
 // role this table doesn't know about (custom or scoped roles included).

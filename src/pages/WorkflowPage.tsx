@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Icon } from "@blueprintjs/core";
 import type { Lead } from "../types";
-import type { AppView } from "../components/app-sidebar-4";
+import type { AppView } from "../components/AppSidebar";
 import { runDryRun, type DryRunResult } from "../lib/dryRun";
 import { NODE_KINDS, NODE_META, addToBranch, createNode, removeNodeDeep, updateNodeDeep, type NodeKind, type WorkflowNode } from "../lib/workflowNodes";
 import { sameNodes, validateWorkflow, type ValidationIssue, type WorkflowVersion } from "../lib/workflowLifecycle";

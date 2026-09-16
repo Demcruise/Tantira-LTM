@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Card, H4, Icon } from "@blueprintjs/core";
 import type { AutoProcessedEntry, Lead } from "../types";
-import type { AppView, FilterPreset } from "../components/app-sidebar-4";
+import type { AppView, FilterPreset } from "../components/AppSidebar";
 import { relativeTime } from "../lib/relativeTime";
 import { FunnelChart } from "../components/pipeline/FunnelChart";
 import { AccuracyTrendChart } from "../components/pipeline/AccuracyTrendChart";

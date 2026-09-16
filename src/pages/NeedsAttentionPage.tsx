@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button, Callout, Card, NonIdealState, Tag } from "@blueprintjs/core";
-import type { AppView } from "../components/app-sidebar-4";
+import type { AppView } from "../components/AppSidebar";
 import type { AttentionReason, Lead, LeadActionType } from "../types";
 import { REASON_ACTION, REASON_LABEL, REASON_ORDER, buildAttentionQueue } from "../lib/needsAttention";
 import { LeadsAreaTabs } from "../components/needs-attention/LeadsAreaTabs";

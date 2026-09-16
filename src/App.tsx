@@ -32,7 +32,7 @@ import { recommendFor } from "./lib/recommendation";
 import { CHANNEL_META, LEAD_ACTION_META } from "./lib/leadActions";
 import { LeadsAreaTabs } from "./components/needs-attention/LeadsAreaTabs";
 import { LoginPage } from "./pages/LoginPage";
-import AppSidebar4, { type AppView, type FilterPreset } from "./components/app-sidebar-4";
+import AppSidebar, { type AppView, type FilterPreset } from "./components/AppSidebar";
 import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
 import { REPS } from "./data/reps";
@@ -877,7 +877,7 @@ export function App() {
   return (
     <div className="app-shell app-shell--sidebar">
       <div className="app-sidebar">
-        <AppSidebar4
+        <AppSidebar
           activeView={view}
           activeFilters={{ status: filters.status === "All" ? undefined : filters.status, priority: filters.priority === "All" ? undefined : filters.priority, assignee: filters.assignee === "All" ? undefined : filters.assignee }}
           onNavigate={navigateTo}
