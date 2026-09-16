@@ -4,7 +4,7 @@ import type { Lead } from "../types";
 import type { AppView, FilterPreset } from "../types";
 import { runDryRun, type DryRunResult } from "../lib/dryRun";
 import { NODE_KINDS, NODE_META, addToBranch, createNode, removeNodeDeep, updateNodeDeep, type NodeKind, type WorkflowNode } from "../lib/workflowNodes";
-import { getPreviousVersion, sameNodes, validateWorkflow, type ValidationIssue, type WorkflowVersion } from "../lib/workflowLifecycle";
+import { getPreviousVersion, sameNodes, validateWorkflow, FIXED_STAGE_IDS, type ValidationIssue, type WorkflowVersion } from "../lib/workflowLifecycle";
 import { TriggerBlock } from "../components/workflow/TriggerBlock";
 import { ActionBlock } from "../components/workflow/ActionBlock";
 import { ConditionalBlock } from "../components/workflow/ConditionalBlock";
@@ -52,16 +52,16 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   const selectedLead = leads.find((l) => l.id === selectedLeadId) ?? null;
   const status = dryRunResult?.statusByNode ?? {};
   const detail = (nodeId: string) => dryRunResult?.steps.find((s) => s.nodeId === nodeId)?.detail;
-  const branchTaken = dryRunResult ? (status["assign-senior"] === "skip" ? "else" : status["assign-round-robin"] === "skip" ? "then" : undefined) : undefined;
+  const branchTaken = dryRunResult ? (status[FIXED_STAGE_IDS.assignSenior] === "skip" ? "else" : status[FIXED_STAGE_IDS.assignRoundRobin] === "skip" ? "then" : undefined) : undefined;
   const activeTool = selectedTool ? NODE_META[selectedTool] : null;
   const dirty = !sameNodes(nodes, published.nodes);
   const previousVersion = getPreviousVersion(versions, published.version);
 
   const fixedStages: FixedStage[] = [
-    { kind: "trigger", id: "trigger", name: "New Lead Captured", eventLabel: "Lead object created", source: "Lead" },
+    { kind: "trigger", id: FIXED_STAGE_IDS.trigger, name: "New Lead Captured", eventLabel: "Lead object created", source: "Lead" },
     {
       kind: "action",
-      id: "enrich",
+      id: FIXED_STAGE_IDS.enrich,
       name: "Enrich Lead Data",
       actionIcon: "new-object",
       actionLabel: "Enrich Lead (Clearbit + firmographics)",
@@ -72,7 +72,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
     },
     {
       kind: "action",
-      id: "score",
+      id: FIXED_STAGE_IDS.score,
       name: "Compute Lead Score",
       actionIcon: "calculator",
       actionLabel: "Score Lead (rules + firmographic weight)",
@@ -84,15 +84,15 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
     },
     {
       kind: "conditional",
-      id: "route",
+      id: FIXED_STAGE_IDS.route,
       name: "Route by Priority",
       condition: { left: "Compute Lead Score.score", operator: "≥", right: "75" },
       thenLabel: "High priority",
       elseLabel: "Standard priority",
-      thenId: "assign-senior",
-      elseId: "assign-round-robin",
+      thenId: FIXED_STAGE_IDS.assignSenior,
+      elseId: FIXED_STAGE_IDS.assignRoundRobin,
       thenAction: {
-        id: "assign-senior",
+        id: FIXED_STAGE_IDS.assignSenior,
         name: "Assign to Senior Rep",
         actionIcon: "star",
         actionLabel: "Assign Lead (senior pool, fast SLA)",
@@ -104,7 +104,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
         configLink: { label: "Who gets what — Assignment Rules", onClick: () => onNavigate("assignment-rules") },
       },
       elseAction: {
-        id: "assign-round-robin",
+        id: FIXED_STAGE_IDS.assignRoundRobin,
         name: "Assign to Round-Robin Queue",
         actionIcon: "people",
         actionLabel: "Assign Lead (SDR round-robin)",
@@ -118,7 +118,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
     },
     {
       kind: "loop",
-      id: "notify",
+      id: FIXED_STAGE_IDS.notify,
       name: "Notify Stakeholders",
       elements: "assignedReps",
       elementVar: "Rep",
@@ -136,7 +136,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
     },
     {
       kind: "action",
-      id: "update-crm",
+      id: FIXED_STAGE_IDS.updateCrm,
       name: "Update CRM Status",
       actionIcon: "tick-circle",
       actionLabel: "Update Lead Status",

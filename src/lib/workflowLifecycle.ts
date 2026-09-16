@@ -1,5 +1,30 @@
 import { NODE_META, flattenNodes, type WorkflowNode } from "./workflowNodes";
 
+// Single source of truth for the fixed pipeline stage IDs and labels.
+// Both dryRun.ts (status lookups) and WorkflowPage.tsx (rendering) import
+// these so a stage rename can't silently break the other file.
+export const FIXED_STAGE_IDS = {
+  trigger: "trigger",
+  enrich: "enrich",
+  score: "score",
+  route: "route",
+  assignSenior: "assign-senior",
+  assignRoundRobin: "assign-round-robin",
+  notify: "notify",
+  updateCrm: "update-crm",
+} as const;
+
+export const FIXED_STAGE_LABELS: Record<string, string> = {
+  [FIXED_STAGE_IDS.trigger]: "New Lead Captured",
+  [FIXED_STAGE_IDS.enrich]: "Enrich Lead Data",
+  [FIXED_STAGE_IDS.score]: "Compute Lead Score",
+  [FIXED_STAGE_IDS.route]: "Route by Priority",
+  [FIXED_STAGE_IDS.assignSenior]: "Assign to Senior Rep",
+  [FIXED_STAGE_IDS.assignRoundRobin]: "Assign to Round-Robin Queue",
+  [FIXED_STAGE_IDS.notify]: "Notify Stakeholders",
+  [FIXED_STAGE_IDS.updateCrm]: "Update CRM Status",
+};
+
 export interface WorkflowVersion {
   version: number;
   nodes: WorkflowNode[];

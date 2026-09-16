@@ -1,5 +1,6 @@
 import type { Lead } from "../types";
 import { ACTION_DEFS, NODE_META, detectTemplateVariables, flattenNodes, transformPreview, type ConditionNode, type WorkflowNode } from "./workflowNodes";
+import { FIXED_STAGE_IDS, FIXED_STAGE_LABELS } from "./workflowLifecycle";
 
 function leadValue(lead: Lead, ref: string): string | number | undefined {
   const key = ref.split(".").pop() ?? "";
@@ -97,39 +98,39 @@ export function runDryRun(lead: Lead, extraNodes: WorkflowNode[] = []): DryRunRe
     statusByNode[nodeId] = status;
   }
 
-  push("trigger", "New Lead Captured", "pass", `Triggered by ${lead.name} (${lead.id})`);
+  push(FIXED_STAGE_IDS.trigger, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.trigger], "pass", `Triggered by ${lead.name} (${lead.id})`);
 
   if (lead.accountMatch === "ambiguous") {
-    push("enrich", "Enrich Lead Data", "fail", "Ambiguous account match — needs manual resolution before this workflow can continue.");
+    push(FIXED_STAGE_IDS.enrich, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.enrich], "fail", "Ambiguous account match — needs manual resolution before this workflow can continue.");
     return { steps, statusByNode, stoppedEarly: true };
   }
-  push("enrich", "Enrich Lead Data", "pass", `Matched — ${lead.company}`);
+  push(FIXED_STAGE_IDS.enrich, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.enrich], "pass", `Matched — ${lead.company}`);
 
-  push("score", "Compute Lead Score", "pass", `Score: ${lead.score}/100 → ${lead.priority}`);
+  push(FIXED_STAGE_IDS.score, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.score], "pass", `Score: ${lead.score}/100 → ${lead.priority}`);
 
   const highPriority = lead.score >= 75;
   push(
-    "route",
-    "Route by Priority",
+    FIXED_STAGE_IDS.route,
+    FIXED_STAGE_LABELS[FIXED_STAGE_IDS.route],
     "pass",
     highPriority ? "Compute Lead Score.score ≥ 75 — High priority branch taken" : "Compute Lead Score.score < 75 — Standard priority branch taken",
   );
 
   if (highPriority) {
-    push("assign-senior", "Assign to Senior Rep", "pass", "Would assign to Senior AE pool, 15 minute SLA");
-    statusByNode["assign-round-robin"] = "skip";
+    push(FIXED_STAGE_IDS.assignSenior, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.assignSenior], "pass", "Would assign to Senior AE pool, 15 minute SLA");
+    statusByNode[FIXED_STAGE_IDS.assignRoundRobin] = "skip";
   } else {
-    push("assign-round-robin", "Assign to Round-Robin Queue", "pass", "Would assign to SDR Queue, 4 hour SLA");
-    statusByNode["assign-senior"] = "skip";
+    push(FIXED_STAGE_IDS.assignRoundRobin, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.assignRoundRobin], "pass", "Would assign to SDR Queue, 4 hour SLA");
+    statusByNode[FIXED_STAGE_IDS.assignSenior] = "skip";
   }
 
-  push("notify", "Notify Stakeholders", "pass", "Simulated Slack DM — no message sent");
+  push(FIXED_STAGE_IDS.notify, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.notify], "pass", "Simulated Slack DM — no message sent");
 
   if (lead.writebackState === "failed") {
-    push("update-crm", "Update CRM Status", "fail", "CRM sync is currently failing for this lead — writeback would fail.");
+    push(FIXED_STAGE_IDS.updateCrm, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.updateCrm], "fail", "CRM sync is currently failing for this lead — writeback would fail.");
     return { steps, statusByNode, stoppedEarly: true };
   }
-  push("update-crm", "Update CRM Status", "pass", "Would set status → Assigned (simulated, no write performed)");
+  push(FIXED_STAGE_IDS.updateCrm, FIXED_STAGE_LABELS[FIXED_STAGE_IDS.updateCrm], "pass", "Would set status → Assigned (simulated, no write performed)");
 
   // Walks the draft tree; returns "stop" when a fail or an End node halts the run.
   function walk(nodes: WorkflowNode[]): "continue" | "stop" {
