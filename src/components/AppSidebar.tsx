@@ -36,12 +36,6 @@ function useScrollFade<T extends HTMLElement>() {
   return { ref, edges, onScroll: update };
 }
 
-const focus =
-  "focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--rb-accent,oklch(20.5%_0_0))]";
-
-const transition =
-  "transition-[background-color,border-color,color,opacity] duration-150 ease-out";
-
 interface NavItem {
   label: string;
   view?: AppView;
@@ -163,7 +157,9 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
 
   const initialSectionIndex = visibleSections.findIndex((s) => s.groups.some((g) => g.items.some((i) => i.view === activeView)));
   const [sectionIndex, setSectionIndex] = useState(Math.max(initialSectionIndex, 0));
-  const [collapsed, setCollapsed] = useState(false);
+  // Default to collapsed on laptop-width screens so the sidebar doesn't compound
+  // other components' responsive column-dropping — the toggle still works either way.
+  const [collapsed, setCollapsed] = useState(() => typeof window !== "undefined" && window.innerWidth < 1366);
   const section = visibleSections[Math.min(sectionIndex, visibleSections.length - 1)];
 
   function isItemActive(item: NavItem): boolean {
@@ -179,19 +175,17 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
   const pages = useScrollFade<HTMLElement>();
 
   return (
-    <div className="relative flex h-full min-h-[640px] w-full overflow-hidden bg-white">
-      <aside className="flex w-14 shrink-0 flex-col items-center bg-neutral-50">
-        <div className="flex h-14 shrink-0 items-center">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--rb-r-md,8px)] bg-[var(--rb-accent,oklch(20.5%_0_0))] text-sm font-medium text-[var(--rb-accent-fg,oklch(100%_0_0))]">
-            T
-          </span>
+    <div className="nav-sidebar">
+      <aside className="nav-sidebar__rail">
+        <div className="nav-sidebar__logo">
+          <span className="nav-sidebar__logo-mark">T</span>
         </div>
-        <div className="relative flex min-h-0 flex-1 flex-col items-center">
+        <div className="nav-sidebar__rail-scroll-area">
           <nav
             ref={rail.ref}
             onScroll={rail.onScroll}
             aria-label="Sections"
-            className="flex h-full flex-col items-center gap-1 overflow-y-auto pb-3"
+            className="nav-sidebar__rail-nav"
           >
             {visibleSections.map((s, i) => {
               const current = i === sectionIndex;
@@ -203,182 +197,116 @@ export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, pe
                   aria-label={s.label}
                   aria-current={current ? "page" : undefined}
                   onClick={() => setSectionIndex(i)}
-                  className={cx(
-                    "inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] active:bg-neutral-200",
-                    current
-                      ? "bg-[#2d72d2] text-white hover:bg-[#215db0] active:bg-[#184a90]"
-                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900",
-                    transition,
-                    focus,
-                  )}
+                  className={cx("nav-sidebar__rail-btn", current && "nav-sidebar__rail-btn--active")}
                 >
-                  <Icon icon={s.icon} className="h-4 w-4 shrink-0" />
+                  <Icon icon={s.icon} />
                 </button>
               );
             })}
           </nav>
-          <div
-            aria-hidden="true"
-            className={cx(
-              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
-              rail.edges.start ? "opacity-100" : "opacity-0",
-            )}
-          />
-          <div
-            aria-hidden="true"
-            className={cx(
-              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
-              rail.edges.end ? "opacity-100" : "opacity-0",
-            )}
-          />
+          <div aria-hidden="true" className={cx("nav-sidebar__fade", "nav-sidebar__fade--top", !rail.edges.start && "nav-sidebar__fade--hidden")} />
+          <div aria-hidden="true" className={cx("nav-sidebar__fade", "nav-sidebar__fade--bottom", !rail.edges.end && "nav-sidebar__fade--hidden")} />
         </div>
-        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-1 bg-neutral-100/70 py-2">
+        <div className="nav-sidebar__rail-footer">
           <button
             type="button"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-pressed={collapsed}
             onClick={() => setCollapsed((c) => !c)}
-            className={cx(
-              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200",
-              transition,
-              focus,
-            )}
+            className="nav-sidebar__icon-btn"
           >
-            <Icon icon={collapsed ? "menu-open" : "menu-closed"} className="h-4 w-4" />
+            <Icon icon={collapsed ? "menu-open" : "menu-closed"} />
           </button>
           <button
             type="button"
             title="Workspace settings"
             aria-label="Workspace settings"
-            className={cx(
-              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200",
-              transition,
-              focus,
-            )}
+            className="nav-sidebar__icon-btn"
           >
-            <Icon icon="cog" className="h-4 w-4" />
+            <Icon icon="cog" />
           </button>
         </div>
       </aside>
 
       {!collapsed && (
-      <div className="flex w-full min-w-0 flex-col bg-neutral-50 sm:w-64 sm:shrink-0">
-        <div className="flex h-14 shrink-0 items-center gap-2 pl-5 pr-2">
-          <h2 className="min-w-0 flex-1 truncate text-base font-medium tracking-[-0.01em] text-neutral-900">
-            {section.label}
-          </h2>
-        </div>
+        <div className="nav-sidebar__panel">
+          <div className="nav-sidebar__header">
+            <h2 className="nav-sidebar__title">{section.label}</h2>
+          </div>
 
-        <div className="px-2 pb-2">
-          <label className="relative flex items-center">
-            <Icon
-              icon="search"
-              className="pointer-events-none absolute left-3 h-4 w-4 text-neutral-500"
-            />
-            <input
-              type="search"
-              placeholder={`Search ${section.label.toLowerCase()}`}
-              aria-label={`Search ${section.label}`}
-              className={cx(
-                "h-9 w-full rounded-[var(--rb-r-md,8px)] border border-neutral-200 bg-white pl-9 pr-3 text-[13px] text-neutral-900 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-neutral-900",
-                transition,
-                focus,
-              )}
-            />
-          </label>
-        </div>
+          <div className="nav-sidebar__search">
+            <label className="nav-sidebar__search-field">
+              <Icon icon="search" className="nav-sidebar__search-icon" />
+              <input
+                type="search"
+                placeholder={`Search ${section.label.toLowerCase()}`}
+                aria-label={`Search ${section.label}`}
+                className="nav-sidebar__search-input"
+              />
+            </label>
+          </div>
 
-        <div className="relative min-h-0 flex-1">
-          <nav
-            ref={pages.ref}
-            onScroll={pages.onScroll}
-            aria-label={`${section.label} pages`}
-            className="h-full space-y-4 overflow-y-auto px-2 pb-3"
-          >
-            {section.groups.map((group) => (
-              <div key={group.label}>
-                <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-neutral-500">
-                  {group.label}
-                </p>
-                <ul className="space-y-0.5">
-                  {group.items.map((item) => {
-                    const current = isItemActive(item);
-                    return (
-                      <li key={item.label}>
-                        <button
-                          type="button"
-                          aria-current={current ? "page" : undefined}
-                          onClick={() => item.view && onNavigate(item.view, item.filterPreset)}
-                          disabled={!item.view}
-                          className={cx(
-                            "flex h-8 w-full items-center rounded-[var(--rb-r-md,8px)] px-3 text-left text-[13px] active:bg-neutral-200",
-                            item.view ? "cursor-pointer" : "cursor-not-allowed opacity-50",
-                            current
-                              ? "bg-neutral-100 font-medium text-neutral-900"
-                              : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
-                            transition,
-                            focus,
-                          )}
-                        >
-                          <span className="min-w-0 flex-1 truncate">
-                            {item.label}
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+          <div className="nav-sidebar__pages-area">
+            <nav
+              ref={pages.ref}
+              onScroll={pages.onScroll}
+              aria-label={`${section.label} pages`}
+              className="nav-sidebar__pages"
+            >
+              {section.groups.map((group) => (
+                <div key={group.label} className="nav-sidebar__group">
+                  <p className="nav-sidebar__group-label">{group.label}</p>
+                  <ul className="nav-sidebar__item-list">
+                    {group.items.map((item) => {
+                      const current = isItemActive(item);
+                      return (
+                        <li key={item.label}>
+                          <button
+                            type="button"
+                            aria-current={current ? "page" : undefined}
+                            onClick={() => item.view && onNavigate(item.view, item.filterPreset)}
+                            disabled={!item.view}
+                            className={cx(
+                              "nav-sidebar__item",
+                              current && "nav-sidebar__item--active",
+                              !item.view && "nav-sidebar__item--disabled",
+                            )}
+                          >
+                            <span className="nav-sidebar__item-label">{item.label}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </nav>
+            <div aria-hidden="true" className={cx("nav-sidebar__fade", "nav-sidebar__fade--top", !pages.edges.start && "nav-sidebar__fade--hidden")} />
+            <div aria-hidden="true" className={cx("nav-sidebar__fade", "nav-sidebar__fade--bottom", !pages.edges.end && "nav-sidebar__fade--hidden")} />
+          </div>
+
+          <div className="nav-sidebar__profile">
+            <div className="nav-sidebar__profile-inner">
+              <span className="nav-sidebar__avatar">RC</span>
+              <div className="nav-sidebar__profile-info">
+                <p className="nav-sidebar__profile-name">Rina Cahyani</p>
+                <p className="nav-sidebar__profile-role">Sales Ops Lead</p>
               </div>
-            ))}
-          </nav>
-          <div
-            aria-hidden="true"
-            className={cx(
-              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
-              pages.edges.start ? "opacity-100" : "opacity-0",
-            )}
-          />
-          <div
-            aria-hidden="true"
-            className={cx(
-              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
-              pages.edges.end ? "opacity-100" : "opacity-0",
-            )}
-          />
-        </div>
-
-        <div className="shrink-0 bg-neutral-100/70 p-2">
-          <div className="flex h-11 items-center gap-2.5 rounded-[var(--rb-r-lg,10px)] px-1">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-medium text-neutral-700">
-              RC
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium text-neutral-900">
-                Rina Cahyani
-              </p>
-              <p className="truncate text-xs text-neutral-500">
-                Sales Ops Lead
-              </p>
+              {onLogout && (
+                <button
+                  type="button"
+                  title="Log out"
+                  aria-label="Log out"
+                  onClick={onLogout}
+                  className="nav-sidebar__logout-btn"
+                >
+                  <Icon icon="log-out" iconSize={14} />
+                </button>
+              )}
             </div>
-            {onLogout && (
-              <button
-                type="button"
-                title="Log out"
-                aria-label="Log out"
-                onClick={onLogout}
-                className={cx(
-                  "inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-md,6px)] text-neutral-500 hover:bg-white hover:text-neutral-900",
-                  transition,
-                  focus,
-                )}
-              >
-                <Icon icon="log-out" className="h-3.5 w-3.5" />
-              </button>
-            )}
           </div>
         </div>
-      </div>
       )}
     </div>
   );
