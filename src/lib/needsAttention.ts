@@ -15,7 +15,7 @@ export const REASON_LABEL: Record<AttentionReason, string> = {
 
 // What a human is being asked to do — drives the inline action on each queue row.
 export const REASON_ACTION: Record<AttentionReason, { label: string; description: string }> = {
-  sync_conflict: { label: "Retry", description: "CRM writeback failed. Retry, or resolve the conflict under Connections." },
+  sync_conflict: { label: "Retry", description: "Couldn't update the CRM. Retry, or fix the conflict in Connections." },
   rep_over_capacity: { label: "Reassign", description: "Owner is at capacity. Reassign or confirm they can take it." },
   ambiguous_match: { label: "Resolve", description: "Enrichment found several possible accounts. Pick one so scoring and routing can continue." },
   sla_at_risk: { label: "Escalate", description: "Response window closing or breached. Escalate to the owner's manager or open and act." },

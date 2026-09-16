@@ -11,7 +11,7 @@ interface TriggerBlockProps {
 
 export function TriggerBlock({ name, eventLabel, source, dryRunStatus, dryRunDetail }: TriggerBlockProps) {
   return (
-    <BlockShell tone="trigger" name={name} tagLabel="Object event" outputLabel="Output" dryRunStatus={dryRunStatus} dryRunDetail={dryRunDetail}>
+    <BlockShell tone="trigger" name={name} tagLabel="Trigger" outputLabel="Output" dryRunStatus={dryRunStatus} dryRunDetail={dryRunDetail}>
       <div className="wf-action__selected">{eventLabel}</div>
       <div className="wf-action__field">
         <div className="wf-action__field-label">Source object</div>

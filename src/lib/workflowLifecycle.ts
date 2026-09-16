@@ -57,3 +57,8 @@ export function validateWorkflow(nodes: WorkflowNode[]): ValidationIssue[] {
 export function sameNodes(a: WorkflowNode[], b: WorkflowNode[]): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
+
+// The most recent version published before `currentVersion`, or null if there isn't one.
+export function getPreviousVersion(versions: WorkflowVersion[], currentVersion: number): WorkflowVersion | null {
+  return versions.filter((v) => v.version < currentVersion).sort((a, b) => b.version - a.version)[0] ?? null;
+}

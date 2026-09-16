@@ -83,7 +83,7 @@ export const SEED_AUDIT_LOG: AuditLogEntry[] = [
   }),
   createAuditEntry({
     actor: { type: "system" },
-    action: "CRM writeback failed",
+    action: "CRM sync failed",
     object: "Lead #418 (Eka Putri)",
     timestamp: hoursAgo(48),
   }),

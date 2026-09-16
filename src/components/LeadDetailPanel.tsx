@@ -168,7 +168,7 @@ export function LeadDetailPanel({
       </SectionAccordion>
 
       {lead.assignedTo && (
-        <SectionAccordion flagged={writebackFlagged} title="Writeback" summary={writebackSummary}>
+        <SectionAccordion flagged={writebackFlagged} title="CRM Sync" summary={writebackSummary}>
           <WritebackSection lead={lead} conflict={conflict} onRetry={onRetrySync} onResolveConflict={onResolveConflict} />
         </SectionAccordion>
       )}

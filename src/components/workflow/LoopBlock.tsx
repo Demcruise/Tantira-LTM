@@ -14,7 +14,7 @@ interface LoopBlockProps {
 
 export function LoopBlock({ name, elements, elementVar, indexVar, children, dryRunStatus, dryRunDetail }: LoopBlockProps) {
   return (
-    <BlockShell tone="loop" name={name} tagLabel="Ontology edits" dryRunStatus={dryRunStatus} dryRunDetail={dryRunDetail}>
+    <BlockShell tone="loop" name={name} tagLabel="Writes data" dryRunStatus={dryRunStatus} dryRunDetail={dryRunDetail}>
       <div className="wf-loop__section-label">Elements</div>
       <div className="wf-loop__chip">{elements}</div>
 

@@ -1,6 +1,6 @@
 import { Fragment, useState } from "react";
 import { Button, Card, Checkbox, HTMLTable, Tag, Tooltip } from "@blueprintjs/core";
-import { PERMISSIONS, PERMISSION_MODULES, type PermissionMatrix, type RoleDef } from "../data/permissions";
+import { PERMISSIONS, PERMISSION_MODULES, type PermissionKey, type PermissionMatrix, type RoleDef } from "../data/permissions";
 import { ConfirmDialog } from "../components/ConfirmDialog";
 import { CreateRoleDialog } from "../components/permissions/CreateRoleDialog";
 import { PageHeader } from "../components/PageHeader";
@@ -8,17 +8,17 @@ import { PageHeader } from "../components/PageHeader";
 interface RolesPermissionsPageProps {
   roles: RoleDef[];
   matrix: PermissionMatrix;
-  onTogglePermission: (roleId: string, permKey: string, granted: boolean) => void;
+  onTogglePermission: (roleId: string, permKey: PermissionKey, granted: boolean) => void;
   onCreateRole: (name: string, scope: string | null) => void;
   onDeleteRole: (roleId: string) => void;
 }
 
 export function RolesPermissionsPage({ roles, matrix, onTogglePermission, onCreateRole, onDeleteRole }: RolesPermissionsPageProps) {
   const [createOpen, setCreateOpen] = useState(false);
-  const [pendingRevoke, setPendingRevoke] = useState<{ roleId: string; permKey: string } | null>(null);
+  const [pendingRevoke, setPendingRevoke] = useState<{ roleId: string; permKey: PermissionKey } | null>(null);
   const [pendingDeleteRole, setPendingDeleteRole] = useState<RoleDef | null>(null);
 
-  function handleCellClick(roleId: string, permKey: string) {
+  function handleCellClick(roleId: string, permKey: PermissionKey) {
     const current = matrix[roleId]?.[permKey] ?? false;
     if (current) {
       setPendingRevoke({ roleId, permKey });

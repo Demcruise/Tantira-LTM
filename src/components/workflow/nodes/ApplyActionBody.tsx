@@ -14,7 +14,7 @@ export function ApplyActionBody({ node, variables, onChange }: Props) {
 
   return (
     <>
-      <NodeField label="Action" required hint="Registered Ontology actions only.">
+      <NodeField label="Action" required hint="Actions your team has registered.">
         <HTMLSelect fill value={node.action} onChange={(e) => { const action = e.target.value as ActionName; onChange({ action, params: defaultActionParams(action) }); }}>
           {ACTION_NAMES.map((a) => (
             <option key={a} value={a}>
@@ -42,7 +42,7 @@ export function ApplyActionBody({ node, variables, onChange }: Props) {
       <div className="wf-node-disclosure wf-node-disclosure--writes">
         <Icon icon="edit" size={12} />
         <span>
-          Ontology edits: writes to <strong>{def.writes.join(", ")}</strong>
+          Writes to: <strong>{def.writes.join(", ")}</strong>
         </span>
       </div>
     </>

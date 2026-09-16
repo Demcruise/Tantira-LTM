@@ -11,8 +11,6 @@ export interface RoleDef {
   scope: string | null; // null = workspace-wide; otherwise a territory name (see ALL_TERRITORIES) the role is restricted to
 }
 
-export type PermissionMatrix = Record<string, Record<string, boolean>>; // roleId -> permKey -> granted
-
 export const PERMISSIONS = [
   { key: "leads.view", module: "Leads", label: "View" },
   { key: "leads.assign", module: "Leads", label: "Assign" },
@@ -25,6 +23,10 @@ export const PERMISSIONS = [
 ] as const satisfies readonly PermissionDef[];
 
 export type PermissionKey = (typeof PERMISSIONS)[number]["key"];
+
+// roleId -> permKey -> granted. roleId stays a string since roles can be created
+// dynamically (see handleCreateRole); permKey is closed to the known PERMISSIONS set.
+export type PermissionMatrix = Record<string, Record<PermissionKey, boolean>>;
 
 export const PERMISSION_MODULES = Array.from(new Set(PERMISSIONS.map((p) => p.module)));
 

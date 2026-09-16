@@ -4,7 +4,7 @@ import { PageHeader } from "../components/PageHeader";
 import type { AutoProcessedEntry, AutoProcessedEventType } from "../types";
 import { EVENT_ICON, EVENT_LABEL } from "../lib/autoProcessedLog";
 import { LeadsAreaTabs } from "../components/needs-attention/LeadsAreaTabs";
-import type { AppView } from "../components/AppSidebar";
+import type { AppView, FilterPreset } from "../components/AppSidebar";
 
 type DateRange = "24h" | "7d" | "30d" | "90d" | "all";
 
@@ -36,7 +36,7 @@ function eventIntentColor(type: AutoProcessedEventType): string {
 interface AutoProcessedLogPageProps {
   entries: AutoProcessedEntry[];
   onOpenLead: (leadId: string) => void;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
   initialSearch?: string;
 }
 

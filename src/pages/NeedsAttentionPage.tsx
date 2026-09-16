@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Button, Callout, Card, NonIdealState, Tag } from "@blueprintjs/core";
-import type { AppView } from "../components/AppSidebar";
+import type { AppView, FilterPreset } from "../components/AppSidebar";
 import type { AttentionReason, Lead, LeadActionType } from "../types";
 import { REASON_ACTION, REASON_LABEL, REASON_ORDER, buildAttentionQueue } from "../lib/needsAttention";
 import { LeadsAreaTabs } from "../components/needs-attention/LeadsAreaTabs";
@@ -14,7 +14,7 @@ interface NeedsAttentionPageProps {
   processedThisWeek: number;
   intakeUnresolved: number;
   onOpenLead: (leadId: string) => void;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
   onRetrySync: (leadId: string) => void;
   onLeadAction: (leadId: string, action: LeadActionType) => void;
 }

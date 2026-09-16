@@ -1,9 +1,10 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Inbox, LogOut, PanelLeftClose, PanelLeftOpen, Plug, Search, Settings, Shield, SlidersHorizontal, Workflow } from "lucide-react";
-import type { LeadStatus, Priority } from "../types";
+import { Icon } from "@blueprintjs/core";
+import type { IconName } from "@blueprintjs/icons";
+import type { AppView, FilterPreset } from "../types";
 import type { PermissionKey } from "../data/permissions";
+
+export type { AppView, FilterPreset };
 
 const cx = (...c: (string | false | null | undefined)[]) =>
   c.filter(Boolean).join(" ");
@@ -36,39 +37,10 @@ function useScrollFade<T extends HTMLElement>() {
 }
 
 const focus =
-  "focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--rb-accent,oklch(20.5%_0_0))] dark:focus-visible:outline-[var(--rb-accent,oklch(100%_0_0))]";
+  "focus-visible:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--rb-accent,oklch(20.5%_0_0))]";
 
 const transition =
   "transition-[background-color,border-color,color,opacity] duration-150 ease-out";
-
-export type AppView =
-  | "command-center"
-  | "approvals"
-  | "dashboard"
-  | "workflow"
-  | "assignment"
-  | "pipeline"
-  | "team-members"
-  | "audit-log"
-  | "roles-permissions"
-  | "sso"
-  | "api-keys"
-  | "notification-preferences"
-  | "assignment-rules"
-  | "prioritization-model"
-  | "auto-processed-log"
-  | "connections"
-  | "needs-attention"
-  | "my-leads"
-  | "intake"
-  | "performance"
-  | "lead-full";
-
-export interface FilterPreset {
-  status?: LeadStatus | "Open";
-  priority?: Priority;
-  assignee?: string;
-}
 
 interface NavItem {
   label: string;
@@ -84,7 +56,7 @@ interface NavGroup {
 
 interface NavSection {
   label: string;
-  icon: typeof Inbox;
+  icon: IconName;
   groups: NavGroup[];
 }
 
@@ -92,7 +64,7 @@ interface NavSection {
 const sections: NavSection[] = [
   {
     label: "Operate",
-    icon: Inbox,
+    icon: "inbox",
     groups: [
       {
         label: "Work",
@@ -109,7 +81,7 @@ const sections: NavSection[] = [
   },
   {
     label: "Optimize",
-    icon: SlidersHorizontal,
+    icon: "properties",
     groups: [
       {
         label: "Routing",
@@ -124,7 +96,7 @@ const sections: NavSection[] = [
   },
   {
     label: "Automate",
-    icon: Workflow,
+    icon: "flow-branch",
     groups: [
       { label: "Build", items: [{ label: "Lead Triage Workflow", view: "workflow", requiredPermission: "automation.edit" }] },
       { label: "Monitor", items: [{ label: "Pipeline Health", view: "pipeline", requiredPermission: "automation.view" }] },
@@ -132,15 +104,15 @@ const sections: NavSection[] = [
   },
   {
     label: "Connect",
-    icon: Plug,
+    icon: "data-connection",
     groups: [
-      { label: "Integrations", items: [{ label: "Connections", view: "connections" }] },
+      { label: "Integrations", items: [{ label: "Connections", view: "connections", requiredPermission: "org.manage" }] },
       { label: "Access", items: [{ label: "API Keys", view: "api-keys", requiredPermission: "org.manage" }] },
     ],
   },
   {
     label: "Govern",
-    icon: Shield,
+    icon: "shield",
     groups: [
       {
         label: "Team",
@@ -175,7 +147,7 @@ interface AppSidebarProps {
   permissions?: Set<PermissionKey>;
 }
 
-export default function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebarProps) {
+export function AppSidebar({ activeView, activeFilters, onNavigate, onLogout, permissions }: AppSidebarProps) {
   function isItemVisible(item: NavItem): boolean {
     return !item.requiredPermission || (permissions?.has(item.requiredPermission) ?? true);
   }
@@ -207,10 +179,10 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
   const pages = useScrollFade<HTMLElement>();
 
   return (
-    <div className="relative flex h-full min-h-[640px] w-full overflow-hidden bg-white dark:bg-neutral-950">
-      <aside className="flex w-14 shrink-0 flex-col items-center bg-neutral-50 dark:bg-neutral-900">
+    <div className="relative flex h-full min-h-[640px] w-full overflow-hidden bg-white">
+      <aside className="flex w-14 shrink-0 flex-col items-center bg-neutral-50">
         <div className="flex h-14 shrink-0 items-center">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--rb-r-md,8px)] bg-[var(--rb-accent,oklch(20.5%_0_0))] text-sm font-medium text-[var(--rb-accent-fg,oklch(100%_0_0))] dark:bg-[var(--rb-accent,oklch(100%_0_0))] dark:text-[var(--rb-accent-fg,oklch(20.5%_0_0))]">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--rb-r-md,8px)] bg-[var(--rb-accent,oklch(20.5%_0_0))] text-sm font-medium text-[var(--rb-accent-fg,oklch(100%_0_0))]">
             T
           </span>
         </div>
@@ -222,7 +194,6 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
             className="flex h-full flex-col items-center gap-1 overflow-y-auto pb-3"
           >
             {visibleSections.map((s, i) => {
-              const Icon = s.icon;
               const current = i === sectionIndex;
               return (
                 <button
@@ -233,15 +204,15 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
                   aria-current={current ? "page" : undefined}
                   onClick={() => setSectionIndex(i)}
                   className={cx(
-                    "inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] active:bg-neutral-200 dark:active:bg-neutral-700",
+                    "inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] active:bg-neutral-200",
                     current
                       ? "bg-[#2d72d2] text-white hover:bg-[#215db0] active:bg-[#184a90]"
-                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+                      : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900",
                     transition,
                     focus,
                   )}
                 >
-                  <Icon aria-hidden="true" className="h-4 w-4 shrink-0" />
+                  <Icon icon={s.icon} className="h-4 w-4 shrink-0" />
                 </button>
               );
             })}
@@ -249,19 +220,19 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
           <div
             aria-hidden="true"
             className={cx(
-              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out dark:from-neutral-900",
+              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
               rail.edges.start ? "opacity-100" : "opacity-0",
             )}
           />
           <div
             aria-hidden="true"
             className={cx(
-              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out dark:from-neutral-900",
+              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
               rail.edges.end ? "opacity-100" : "opacity-0",
             )}
           />
         </div>
-        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-1 bg-neutral-100/70 py-2 dark:bg-neutral-800/40">
+        <div className="flex w-full shrink-0 flex-col items-center justify-center gap-1 bg-neutral-100/70 py-2">
           <button
             type="button"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -269,52 +240,48 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
             aria-pressed={collapsed}
             onClick={() => setCollapsed((c) => !c)}
             className={cx(
-              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 dark:active:bg-neutral-700",
+              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200",
               transition,
               focus,
             )}
           >
-            {collapsed ? (
-              <PanelLeftOpen aria-hidden="true" className="h-4 w-4" />
-            ) : (
-              <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
-            )}
+            <Icon icon={collapsed ? "menu-open" : "menu-closed"} className="h-4 w-4" />
           </button>
           <button
             type="button"
             title="Workspace settings"
             aria-label="Workspace settings"
             className={cx(
-              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-100 dark:active:bg-neutral-700",
+              "inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-[var(--rb-r-lg,10px)] text-neutral-500 hover:bg-white hover:text-neutral-900 active:bg-neutral-200",
               transition,
               focus,
             )}
           >
-            <Settings aria-hidden="true" className="h-4 w-4" />
+            <Icon icon="cog" className="h-4 w-4" />
           </button>
         </div>
       </aside>
 
       {!collapsed && (
-      <div className="flex w-full min-w-0 flex-col bg-neutral-50 sm:w-64 sm:shrink-0 dark:bg-neutral-900">
+      <div className="flex w-full min-w-0 flex-col bg-neutral-50 sm:w-64 sm:shrink-0">
         <div className="flex h-14 shrink-0 items-center gap-2 pl-5 pr-2">
-          <h2 className="min-w-0 flex-1 truncate text-base font-medium tracking-[-0.01em] text-neutral-900 dark:text-neutral-100">
+          <h2 className="min-w-0 flex-1 truncate text-base font-medium tracking-[-0.01em] text-neutral-900">
             {section.label}
           </h2>
         </div>
 
         <div className="px-2 pb-2">
           <label className="relative flex items-center">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 h-4 w-4 text-neutral-500 dark:text-neutral-500"
+            <Icon
+              icon="search"
+              className="pointer-events-none absolute left-3 h-4 w-4 text-neutral-500"
             />
             <input
               type="search"
               placeholder={`Search ${section.label.toLowerCase()}`}
               aria-label={`Search ${section.label}`}
               className={cx(
-                "h-9 w-full rounded-[var(--rb-r-md,8px)] border border-neutral-200 bg-white pl-9 pr-3 text-[13px] text-neutral-900 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100 dark:placeholder:text-neutral-500 dark:hover:border-neutral-700 dark:focus:border-white",
+                "h-9 w-full rounded-[var(--rb-r-md,8px)] border border-neutral-200 bg-white pl-9 pr-3 text-[13px] text-neutral-900 placeholder:text-neutral-400 hover:border-neutral-300 focus:border-neutral-900",
                 transition,
                 focus,
               )}
@@ -331,7 +298,7 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
           >
             {section.groups.map((group) => (
               <div key={group.label}>
-                <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-500">
+                <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wider text-neutral-500">
                   {group.label}
                 </p>
                 <ul className="space-y-0.5">
@@ -345,11 +312,11 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
                           onClick={() => item.view && onNavigate(item.view, item.filterPreset)}
                           disabled={!item.view}
                           className={cx(
-                            "flex h-8 w-full items-center rounded-[var(--rb-r-md,8px)] px-3 text-left text-[13px] active:bg-neutral-200 dark:active:bg-neutral-700",
+                            "flex h-8 w-full items-center rounded-[var(--rb-r-md,8px)] px-3 text-left text-[13px] active:bg-neutral-200",
                             item.view ? "cursor-pointer" : "cursor-not-allowed opacity-50",
                             current
-                              ? "bg-neutral-100 font-medium text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                              : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100",
+                              ? "bg-neutral-100 font-medium text-neutral-900"
+                              : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900",
                             transition,
                             focus,
                           )}
@@ -368,29 +335,29 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
           <div
             aria-hidden="true"
             className={cx(
-              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out dark:from-neutral-900",
+              "pointer-events-none absolute inset-x-0 top-0 h-8 bg-gradient-to-b from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
               pages.edges.start ? "opacity-100" : "opacity-0",
             )}
           />
           <div
             aria-hidden="true"
             className={cx(
-              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out dark:from-neutral-900",
+              "pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-neutral-50 to-transparent transition-opacity duration-200 ease-out",
               pages.edges.end ? "opacity-100" : "opacity-0",
             )}
           />
         </div>
 
-        <div className="shrink-0 bg-neutral-100/70 p-2 dark:bg-neutral-800/40">
+        <div className="shrink-0 bg-neutral-100/70 p-2">
           <div className="flex h-11 items-center gap-2.5 rounded-[var(--rb-r-lg,10px)] px-1">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-medium text-neutral-700 dark:bg-neutral-700 dark:text-neutral-200">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-200 text-xs font-medium text-neutral-700">
               RC
             </span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-medium text-neutral-900 dark:text-neutral-100">
+              <p className="truncate text-[13px] font-medium text-neutral-900">
                 Rina Cahyani
               </p>
-              <p className="truncate text-xs text-neutral-500 dark:text-neutral-500">
+              <p className="truncate text-xs text-neutral-500">
                 Sales Ops Lead
               </p>
             </div>
@@ -401,12 +368,12 @@ export default function AppSidebar({ activeView, activeFilters, onNavigate, onLo
                 aria-label="Log out"
                 onClick={onLogout}
                 className={cx(
-                  "inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-md,6px)] text-neutral-500 hover:bg-white hover:text-neutral-900 dark:text-neutral-500 dark:hover:bg-neutral-700 dark:hover:text-neutral-100",
+                  "inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-[var(--rb-r-md,6px)] text-neutral-500 hover:bg-white hover:text-neutral-900",
                   transition,
                   focus,
                 )}
               >
-                <LogOut aria-hidden="true" className="h-3.5 w-3.5" />
+                <Icon icon="log-out" className="h-3.5 w-3.5" />
               </button>
             )}
           </div>

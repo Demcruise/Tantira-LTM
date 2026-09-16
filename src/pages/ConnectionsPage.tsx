@@ -28,7 +28,7 @@ export function ConnectionsPage({ connections, reconnectingId, onReconnect, onRe
       <PageHeader
         section="Connect"
         title="Connections"
-        description="Sync health for every connected CRM. A conflict appears when the CRM edits a field after Tantira wrote it; resolving it resumes writeback for that lead and clears it from the Attention Center."
+        description="Sync health for every connected CRM. A conflict appears when the CRM edits a field after Tantira wrote it; resolving it resumes the sync for that lead and clears it from the Attention Center."
       />
 
       <div className="kpi-row connections-page__kpis">

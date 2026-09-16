@@ -37,7 +37,7 @@ export function ActionBlock({
       tone="action"
       name={name}
       tagIcon={actionIcon}
-      tagLabel="Ontology edits"
+      tagLabel="Writes data"
       outputLabel={outputLabel}
       nested={nested}
       dryRunStatus={dryRunStatus}

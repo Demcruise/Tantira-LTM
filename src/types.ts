@@ -1,5 +1,34 @@
 export type Priority = "Hot" | "Warm" | "Cold";
 export type LeadStatus = "New" | "Contacted" | "Qualified" | "Assigned" | "Lost";
+
+export type AppView =
+  | "command-center"
+  | "approvals"
+  | "dashboard"
+  | "workflow"
+  | "assignment"
+  | "pipeline"
+  | "team-members"
+  | "audit-log"
+  | "roles-permissions"
+  | "sso"
+  | "api-keys"
+  | "notification-preferences"
+  | "assignment-rules"
+  | "prioritization-model"
+  | "auto-processed-log"
+  | "connections"
+  | "needs-attention"
+  | "my-leads"
+  | "intake"
+  | "performance"
+  | "lead-full";
+
+export interface FilterPreset {
+  status?: LeadStatus | "Open";
+  priority?: Priority;
+  assignee?: string;
+}
 export type WritebackState = "idle" | "syncing" | "synced" | "failed";
 export type Outcome = "Won" | "Lost" | "No response";
 

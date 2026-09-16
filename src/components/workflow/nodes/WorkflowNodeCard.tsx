@@ -106,7 +106,7 @@ export function WorkflowNodeCard(props: WorkflowNodeCardProps) {
       {node.kind === "get-object-property" && (
         <div className="wf-node-disclosure">
           <Icon icon="eye-open" size={12} />
-          <span>Read-only — this step never writes to the Ontology.</span>
+          <span>Read-only — this step never writes any data.</span>
         </div>
       )}
     </BlockShell>

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Icon } from "@blueprintjs/core";
 import type { Lead } from "../types";
-import type { AppView } from "../components/AppSidebar";
+import type { AppView, FilterPreset } from "../components/AppSidebar";
 import { runDryRun, type DryRunResult } from "../lib/dryRun";
 import { NODE_KINDS, NODE_META, addToBranch, createNode, removeNodeDeep, updateNodeDeep, type NodeKind, type WorkflowNode } from "../lib/workflowNodes";
-import { sameNodes, validateWorkflow, type ValidationIssue, type WorkflowVersion } from "../lib/workflowLifecycle";
+import { getPreviousVersion, sameNodes, validateWorkflow, type ValidationIssue, type WorkflowVersion } from "../lib/workflowLifecycle";
 import { TriggerBlock } from "../components/workflow/TriggerBlock";
 import { ActionBlock } from "../components/workflow/ActionBlock";
 import { ConditionalBlock } from "../components/workflow/ConditionalBlock";
@@ -31,7 +31,7 @@ interface WorkflowPageProps {
   onPublish: (nodes: WorkflowNode[]) => void;
   onRollback: () => void;
   onLogAction: (action: string, object: string, before?: string, after?: string) => void;
-  onNavigate: (view: AppView) => void;
+  onNavigate: (view: AppView, filterPreset?: FilterPreset) => void;
 }
 
 export function WorkflowPage({ leads, nodes, onNodesChange, published, versions, onPublish, onRollback, onLogAction, onNavigate }: WorkflowPageProps) {
@@ -49,7 +49,7 @@ export function WorkflowPage({ leads, nodes, onNodesChange, published, versions,
   const branchTaken = dryRunResult ? (status["assign-senior"] === "skip" ? "else" : status["assign-round-robin"] === "skip" ? "then" : undefined) : undefined;
   const activeTool = selectedTool ? NODE_META[selectedTool] : null;
   const dirty = !sameNodes(nodes, published.nodes);
-  const previousVersion = versions.filter((v) => v.version < published.version).sort((a, b) => b.version - a.version)[0] ?? null;
+  const previousVersion = getPreviousVersion(versions, published.version);
 
   const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
   const runsThisWeek = leads.filter((l) => new Date(l.createdAt).getTime() >= weekAgo).length;

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { mockLeads } from "./data/mockLeads";
-import type { ActivityChannel, Lead, LeadActionType, Outcome, OverrideReason } from "./types";
+import type { ActivityChannel, AppView, FilterPreset, Lead, LeadActionType, Outcome, OverrideReason } from "./types";
 import { KpiRow } from "./components/KpiRow";
 import { ActionBanner } from "./components/ActionBanner";
 import { FiltersBar, type Filters } from "./components/FiltersBar";
@@ -32,52 +32,45 @@ import { recommendFor } from "./lib/recommendation";
 import { CHANNEL_META, LEAD_ACTION_META } from "./lib/leadActions";
 import { LeadsAreaTabs } from "./components/needs-attention/LeadsAreaTabs";
 import { LoginPage } from "./pages/LoginPage";
-import AppSidebar, { type AppView, type FilterPreset } from "./components/AppSidebar";
+import { AppSidebar } from "./components/AppSidebar";
 import { AppHeader } from "./components/AppHeader";
 import { PageHeader } from "./components/PageHeader";
 import { REPS } from "./data/reps";
-import { CURRENT_USER, INITIAL_TEAM } from "./data/team";
-import { hasPermission, INITIAL_MATRIX, INITIAL_ROLES, PERMISSIONS, resolveRoleId, type PermissionKey, type PermissionMatrix, type RoleDef } from "./data/permissions";
-import { INITIAL_SSO_CONFIG } from "./data/sso";
-import { INITIAL_API_KEYS, generateApiKey } from "./data/apiKeys";
-import { SEED_NOTIFICATIONS } from "./data/notifications";
-import { INITIAL_NOTIFICATION_PREFS } from "./data/notificationPrefs";
-import { INITIAL_ASSIGNMENT_RULES } from "./data/assignmentRules";
-import { INITIAL_SCORING_RULES, INITIAL_TIER_THRESHOLDS } from "./data/scoringRules";
+import { CURRENT_USER } from "./data/team";
+import { hasPermission, PERMISSIONS, resolveRoleId, type PermissionKey } from "./data/permissions";
 import { landingViewForRole } from "./lib/roleLanding";
-import { INITIAL_CONNECTIONS } from "./data/connections";
-import { assignByRules, summarizeConditions, summarizeTarget } from "./lib/ruleEngine";
+import { assignByRules } from "./lib/ruleEngine";
 import type { SuggestedActionKey } from "./components/lead-detail/SuggestedAction";
-import type {
-  ApiKey,
-  ApiKeyScope,
-  AppNotification,
-  AssignmentRule,
-  AttributeMap,
-  AuditLogEntry,
-  ConflictResolution,
-  CrmConnection,
-  MemberRole,
-  NotificationChannel,
-  NotificationPrefMatrix,
-  ScoringRule,
-  SsoConfig,
-  SsoProvider,
-  TeamMember,
-  TierThresholds,
-} from "./types";
-import { ssoStatus } from "./types";
+import type { ConflictResolution } from "./types";
 import { clampScore, scoreToPriority } from "./lib/scoring";
 import type { WorkflowNode } from "./lib/workflowNodes";
 import type { WorkflowVersion } from "./lib/workflowLifecycle";
-import { createAuditEntry, SEED_AUDIT_LOG } from "./lib/auditLog";
+import { getPreviousVersion } from "./lib/workflowLifecycle";
 import { buildAutoProcessedLog } from "./lib/autoProcessedLog";
 import { AppToaster } from "./lib/toaster";
+import { useAuditLog } from "./hooks/useAuditLog";
+import { useSsoConfig } from "./hooks/useSsoConfig";
+import { useApiKeys } from "./hooks/useApiKeys";
+import { useTeamMembers } from "./hooks/useTeamMembers";
+import { useRolesPermissions } from "./hooks/useRolesPermissions";
+import { useAssignmentRules } from "./hooks/useAssignmentRules";
+import { useScoringRules } from "./hooks/useScoringRules";
+import { useNotificationPrefs } from "./hooks/useNotificationPrefs";
+import { useNotifications } from "./hooks/useNotifications";
+import { useConnections } from "./hooks/useConnections";
 
 const ASSIGNEES = REPS.map((r) => r.name);
 
 const EMPTY_FILTERS: Filters = { search: "", status: "All", priority: "All", assignee: "All" };
 const ITEM_LABEL: Record<IntakeItem["kind"], string> = { ambiguous_person: "Ambiguous person", missing_company: "Missing company", duplicate: "Possible duplicate" };
+
+// "Open" is a pseudo-status meaning "anything but Lost" — named here so the rule reads
+// as a statement instead of an inline double-negation at the call site.
+function matchesStatusFilter(lead: Lead, status: Filters["status"]): boolean {
+  if (status === "All") return true;
+  if (status === "Open") return lead.status !== "Lost";
+  return lead.status === status;
+}
 
 export function App() {
   const [view, setView] = useState<AppView>("dashboard");
@@ -85,14 +78,7 @@ export function App() {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
-  const [members, setMembers] = useState<TeamMember[]>(INITIAL_TEAM);
-  const [auditLog, setAuditLog] = useState<AuditLogEntry[]>(SEED_AUDIT_LOG);
-  const [roles, setRoles] = useState<RoleDef[]>(INITIAL_ROLES);
-  const [matrix, setMatrix] = useState<PermissionMatrix>(INITIAL_MATRIX);
-  const [ssoConfig, setSsoConfig] = useState<SsoConfig>(INITIAL_SSO_CONFIG);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(INITIAL_API_KEYS);
   const [acknowledgedOverrideIds, setAcknowledgedOverrideIds] = useState<Set<string>>(new Set());
-  const [notifications, setNotifications] = useState<AppNotification[]>(SEED_NOTIFICATIONS);
   const [auditSearchSeed, setAuditSearchSeed] = useState("");
   const [workflowNodes, setWorkflowNodes] = useState<WorkflowNode[]>([]);
   const [workflowVersions, setWorkflowVersions] = useState<WorkflowVersion[]>(() => {
@@ -104,14 +90,25 @@ export function App() {
   const [viewingAsRep, setViewingAsRep] = useState(ASSIGNEES[0]);
   const [checkedLeadIds, setCheckedLeadIds] = useState<Set<string>>(new Set());
   const [intakeItems, setIntakeItems] = useState<IntakeItem[]>(INITIAL_INTAKE_ITEMS);
-  const [notifPrefs, setNotifPrefs] = useState<NotificationPrefMatrix>(INITIAL_NOTIFICATION_PREFS);
-  const [assignmentRules, setAssignmentRules] = useState<AssignmentRule[]>(INITIAL_ASSIGNMENT_RULES);
-  const [scoringRules, setScoringRules] = useState<ScoringRule[]>(INITIAL_SCORING_RULES);
-  const [tierThresholds, setTierThresholds] = useState<TierThresholds>(INITIAL_TIER_THRESHOLDS);
-  const [connections, setConnections] = useState<CrmConnection[]>(INITIAL_CONNECTIONS);
-  const [reconnectingId, setReconnectingId] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [autoLogSearchSeed, setAutoLogSearchSeed] = useState("");
+
+  const { auditLog, logAction } = useAuditLog();
+  const { ssoConfig, ssoAvailableForEmail, handleSelectProvider, handleSaveSsoMetadata, handleSaveAttributeMap, handleSsoTestPass, handleEnableSso, handleDisableSso } = useSsoConfig(logAction);
+  const { apiKeys, handleGenerateApiKey, handleRevokeApiKey } = useApiKeys(logAction);
+  const { members, handleInviteMember, handleChangeRole, handleResendInvite, handleRevokeInvite } = useTeamMembers(logAction);
+  const { roles, matrix, handleTogglePermission, handleCreateRole, handleDeleteRole } = useRolesPermissions(logAction);
+  const { assignmentRules, handleReorderRules, handleSaveRule, handleDeleteRule, handleDuplicateRule, handleToggleRuleStatus } = useAssignmentRules(logAction);
+  const { scoringRules, tierThresholds, setTierThresholds, handleAddScoringRule, handleSaveScoringRule, handleDeleteScoringRule, handleToggleScoringRuleStatus, handleCommitThresholds } = useScoringRules(logAction, leads, setLeads);
+  const { notifPrefs, handleToggleNotificationPref } = useNotificationPrefs();
+  const { notifications, addNotification, handleMarkAllNotificationsRead, handleSelectNotification } = useNotifications(
+    (leadId) => setSelectedLeadId(leadId),
+    (auditSearch) => {
+      setAuditSearchSeed(auditSearch);
+      setView("audit-log");
+    },
+  );
+  const { connections, setConnections, reconnectingId, handleReconnect } = useConnections(logAction);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -128,7 +125,7 @@ export function App() {
         const haystack = `${lead.name} ${lead.company} ${lead.email}`.toLowerCase();
         if (!haystack.includes(search)) return false;
       }
-      if (filters.status === "Open" ? lead.status === "Lost" : filters.status !== "All" && lead.status !== filters.status) return false;
+      if (!matchesStatusFilter(lead, filters.status)) return false;
       if (filters.priority !== "All" && lead.priority !== filters.priority) return false;
       if (filters.assignee === "Unassigned" && lead.assignedTo !== null) return false;
       if (filters.assignee !== "All" && filters.assignee !== "Unassigned" && lead.assignedTo !== filters.assignee) {
@@ -172,10 +169,6 @@ export function App() {
     [selectedLead, leads, assignmentRules, tierThresholds],
   );
 
-  function handleOpenLeadFromLog(leadId: string) {
-    setSelectedLeadId(leadId);
-  }
-
   function navigateTo(next: AppView, filterPreset?: FilterPreset) {
     setAuditSearchSeed("");
     setAutoLogSearchSeed("");
@@ -187,10 +180,6 @@ export function App() {
   }
 
   const processedThisWeek = autoProcessedLog.filter((e) => Date.now() - new Date(e.time).getTime() <= 7 * 24 * 60 * 60 * 1000).length;
-
-  function ssoAvailableForEmail(email: string) {
-    return email.toLowerCase().endsWith("@tantira.co") && ssoConfig.enabled;
-  }
 
   function handleLogin(email: string) {
     setAuthenticated(true);
@@ -249,10 +238,7 @@ export function App() {
 
     if (action === "escalate") {
       logAction("Escalated for manager follow-up", lead.name, "No response", "Flagged for review");
-      setNotifications((prev) => [
-        { id: `N-${Date.now()}`, title: "Escalation raised", subtitle: lead.name, time: new Date().toISOString(), read: false, leadId, reason: "sla_at_risk" },
-        ...prev,
-      ]);
+      addNotification({ id: `N-${Date.now()}`, title: "Escalation raised", subtitle: lead.name, time: new Date().toISOString(), read: false, leadId, reason: "sla_at_risk" });
       AppToaster.show({ icon: "warning-sign", intent: "warning", message: `${lead.name} flagged for manager review — notification sent.` });
       return;
     }
@@ -284,7 +270,7 @@ export function App() {
     };
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, decision } : l)));
     logAction("Accepted recommendation", lead.name, "Unassigned", owner);
-    AppToaster.show({ icon: "thumbs-up", intent: "success", message: `${lead.name} assigned to ${owner}. Writeback started — it will appear in ${owner}'s My Leads.` });
+    AppToaster.show({ icon: "thumbs-up", intent: "success", message: `${lead.name} assigned to ${owner}. Syncing to CRM — it will appear in ${owner}'s My Leads.` });
   }
 
   function handleOverrideRecommendation(leadId: string, owner: string, reason: OverrideReason) {
@@ -342,10 +328,7 @@ export function App() {
         patch.downstream = lead.downstream ?? { kind: "nurture", startedAt: now };
         break;
       case "escalate":
-        setNotifications((prev) => [
-          { id: `N-${Date.now()}`, title: "Escalation raised", subtitle: lead.name, time: now, read: false, leadId, reason: "sla_at_risk" },
-          ...prev,
-        ]);
+        addNotification({ id: `N-${Date.now()}`, title: "Escalation raised", subtitle: lead.name, time: now, read: false, leadId, reason: "sla_at_risk" });
         break;
     }
     setLeads((prev) => prev.map((l) => (l.id === leadId ? { ...l, ...patch } : l)));
@@ -440,7 +423,7 @@ export function App() {
   }
 
   function handleRollbackWorkflow() {
-    const previous = workflowVersions.filter((v) => v.version < publishedWorkflow.version).sort((a, b) => b.version - a.version)[0];
+    const previous = getPreviousVersion(workflowVersions, publishedWorkflow.version);
     if (!previous) return;
     setWorkflowVersions((prev) => prev.filter((v) => v.version !== publishedWorkflow.version));
     setWorkflowNodes(JSON.parse(JSON.stringify(previous.nodes)));
@@ -461,7 +444,7 @@ export function App() {
         setLeads((prev) => prev.map((l) => (checkedLeadIds.has(l.id) && l.status !== "Lost" ? { ...l, assignedTo: action.assignee, status: l.status === "New" ? "Assigned" : l.status, writebackState: "syncing", decision: null } : l)));
         targets.filter((l) => l.status !== "Lost").forEach((l) => runWriteback(l.id));
         logAction("Bulk assigned leads", plural, undefined, `${action.assignee}: ${names}`);
-        AppToaster.show({ icon: "person", intent: "success", message: `Assigned ${plural} to ${action.assignee}. Writeback started.` });
+        AppToaster.show({ icon: "person", intent: "success", message: `Assigned ${plural} to ${action.assignee}. Syncing to CRM.` });
         break;
       }
       case "priority": {
@@ -525,7 +508,7 @@ export function App() {
     AppToaster.show({
       icon: "tick-circle",
       intent: "success",
-      message: `Assigned ${plan.length} lead${plan.length === 1 ? "" : "s"} by rules. CRM writeback started — track it under Connections.`,
+      message: `Assigned ${plan.length} lead${plan.length === 1 ? "" : "s"} by rules. CRM sync started — track it under Connections.`,
     });
   }
 
@@ -539,278 +522,6 @@ export function App() {
         return { ...l, accountMatch: flippedMatch, score, priority: scoreToPriority(score, tierThresholds) };
       }),
     );
-  }
-
-  function logAction(action: string, object: string, before?: string, after?: string) {
-    setAuditLog((prev) => [
-      createAuditEntry({ actor: { type: "user", name: CURRENT_USER }, action, object, before, after }),
-      ...prev,
-    ]);
-  }
-
-  function handleInviteMember(email: string, role: MemberRole) {
-    const id = `TM-${Date.now()}`;
-    setMembers((prev) => [...prev, { id, name: email, email, role, status: "Pending" }]);
-    logAction("Invited member", email, undefined, `${role}, Pending`);
-  }
-
-  function handleChangeRole(memberId: string, role: MemberRole) {
-    const member = members.find((m) => m.id === memberId);
-    if (!member || member.role === role) return;
-    setMembers((prev) => prev.map((m) => (m.id === memberId ? { ...m, role } : m)));
-    logAction("Changed role", member.name, member.role, role);
-  }
-
-  function handleResendInvite(memberId: string) {
-    const member = members.find((m) => m.id === memberId);
-    if (!member) return;
-    logAction("Resent invite", member.email);
-  }
-
-  function handleRevokeInvite(memberId: string) {
-    const member = members.find((m) => m.id === memberId);
-    if (!member) return;
-    setMembers((prev) => prev.filter((m) => m.id !== memberId));
-    logAction("Revoked invite", member.email, `${member.role}, Pending`, "Revoked");
-  }
-
-  function handleTogglePermission(roleId: string, permKey: string, granted: boolean) {
-    const role = roles.find((r) => r.id === roleId);
-    const perm = PERMISSIONS.find((p) => p.key === permKey);
-    if (!role || !perm) return;
-
-    setMatrix((prev) => ({ ...prev, [roleId]: { ...prev[roleId], [permKey]: granted } }));
-    logAction(
-      granted ? "Granted permission" : "Revoked permission",
-      `${role.name} — ${perm.module}: ${perm.label}`,
-      granted ? "Revoked" : "Granted",
-      granted ? "Granted" : "Revoked",
-    );
-    AppToaster.show({
-      icon: granted ? "tick-circle" : "warning-sign",
-      intent: granted ? "success" : "warning",
-      message: `${granted ? "Granted" : "Revoked"} "${perm.module}: ${perm.label}" ${granted ? "to" : "from"} ${role.name}.`,
-    });
-  }
-
-  function handleCreateRole(name: string, scope: string | null) {
-    const id = `role-${Date.now()}`;
-    setRoles((prev) => [...prev, { id, name, system: false, scope }]);
-    setMatrix((prev) => ({
-      ...prev,
-      [id]: Object.fromEntries(PERMISSIONS.map((p) => [p.key, false])),
-    }));
-    logAction("Created role", name, undefined, scope ? `0 permissions granted, scoped to ${scope}` : "0 permissions granted");
-    AppToaster.show({ icon: "new-person", intent: "primary", message: `Created role "${name}"${scope ? ` — scoped to ${scope}` : ""}.` });
-  }
-
-  function handleDeleteRole(roleId: string) {
-    const role = roles.find((r) => r.id === roleId);
-    if (!role) return;
-    setRoles((prev) => prev.filter((r) => r.id !== roleId));
-    setMatrix((prev) => {
-      const next = { ...prev };
-      delete next[roleId];
-      return next;
-    });
-    logAction("Deleted role", role.name, "Active", "Deleted");
-    AppToaster.show({ icon: "trash", intent: "danger", message: `Deleted role "${role.name}".` });
-  }
-
-  function handleSelectProvider(provider: SsoProvider) {
-    const before = ssoStatus(ssoConfig);
-    setSsoConfig((prev) => ({ ...prev, provider, testPassed: false, enabled: false }));
-    logAction("SSO config updated", `${provider} IdP`, before, "Configured, not enabled");
-  }
-
-  function handleSaveSsoMetadata(method: "upload" | "url", value: string) {
-    setSsoConfig((prev) => ({ ...prev, metadataMethod: method, metadataValue: value, testPassed: false }));
-    logAction("SSO metadata saved", `${ssoConfig.provider} IdP`, undefined, method === "upload" ? value : "Metadata URL set");
-  }
-
-  function handleSaveAttributeMap(map: AttributeMap) {
-    setSsoConfig((prev) => ({ ...prev, attributeMap: map, testPassed: false }));
-    logAction("SSO attributes mapped", `${ssoConfig.provider} IdP`);
-  }
-
-  function handleSsoTestPass() {
-    setSsoConfig((prev) => ({ ...prev, testPassed: true }));
-    logAction("SSO test login succeeded", `${ssoConfig.provider} IdP`);
-  }
-
-  function handleEnableSso() {
-    setSsoConfig((prev) => ({ ...prev, enabled: true }));
-    logAction("SSO config updated", `${ssoConfig.provider} IdP`, "Configured, not enabled", "Active");
-    AppToaster.show({ icon: "tick-circle", intent: "success", message: `SSO is now active via ${ssoConfig.provider}.` });
-  }
-
-  function handleDisableSso() {
-    setSsoConfig((prev) => ({ ...prev, enabled: false }));
-    logAction("SSO config updated", `${ssoConfig.provider} IdP`, "Active", "Configured, not enabled");
-    AppToaster.show({ icon: "warning-sign", intent: "warning", message: "SSO disabled. Users can log in with passwords again." });
-  }
-
-  function handleGenerateApiKey(name: string, scope: ApiKeyScope): { fullKey: string } {
-    const { fullKey, maskedKey } = generateApiKey();
-    const id = `AK-${Date.now()}`;
-    setApiKeys((prev) => [...prev, { id, name, maskedKey, scope, lastUsed: null, createdAt: new Date().toISOString() }]);
-    logAction("API key generated", name, undefined, scope);
-    return { fullKey };
-  }
-
-  function handleRevokeApiKey(keyId: string) {
-    const key = apiKeys.find((k) => k.id === keyId);
-    if (!key) return;
-    setApiKeys((prev) => prev.filter((k) => k.id !== keyId));
-    logAction("API key revoked", key.name, key.maskedKey, "Revoked");
-    AppToaster.show({ icon: "key", intent: "danger", message: `Revoked API key "${key.name}".` });
-  }
-
-  function handleMarkAllNotificationsRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  }
-
-  function handleSelectNotification(notification: AppNotification) {
-    setNotifications((prev) => prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)));
-    if (notification.leadId) {
-      setSelectedLeadId(notification.leadId);
-    } else if (notification.auditSearch) {
-      setAuditSearchSeed(notification.auditSearch);
-      setView("audit-log");
-    }
-  }
-
-  function handleToggleNotificationPref(eventKey: string, channel: NotificationChannel, enabled: boolean) {
-    setNotifPrefs((prev) => ({ ...prev, [eventKey]: { ...prev[eventKey], [channel]: enabled } }));
-    AppToaster.show({
-      icon: enabled ? "tick-circle" : "small-cross",
-      intent: enabled ? "success" : "none",
-      message: `${enabled ? "Enabled" : "Disabled"} ${channel === "inApp" ? "in-app" : "email"} notifications for this event.`,
-      timeout: 2000,
-    });
-  }
-
-  function handleReorderRules(next: AssignmentRule[]) {
-    setAssignmentRules(next);
-    logAction("Reordered assignment rules", "Assignment Rules", undefined, next.filter((r) => !r.isCatchAll).map((r) => `#${r.priority}`).join(" > "));
-  }
-
-  function handleSaveRule(rule: AssignmentRule) {
-    const existing = assignmentRules.find((r) => r.id === rule.id);
-    const stamped = { ...rule, lastModifiedBy: CURRENT_USER, lastModifiedAt: new Date().toISOString() };
-    if (existing) {
-      setAssignmentRules((prev) => prev.map((r) => (r.id === rule.id ? stamped : r)));
-      logAction("Edited assignment rule", `Rule #${rule.priority}`, summarizeConditions(existing.conditions, existing.conditionLogic), summarizeConditions(rule.conditions, rule.conditionLogic));
-    } else {
-      setAssignmentRules((prev) => {
-        const catchAll = prev.find((r) => r.isCatchAll);
-        const rest = prev.filter((r) => !r.isCatchAll);
-        return catchAll ? [...rest, stamped, catchAll] : [...rest, stamped];
-      });
-      logAction("Created assignment rule", `Rule #${rule.priority}`, undefined, `${summarizeConditions(rule.conditions, rule.conditionLogic)} → ${summarizeTarget(rule.assignTarget)}`);
-    }
-    AppToaster.show({ icon: "tick-circle", intent: "success", message: `Rule #${rule.priority} saved.` });
-  }
-
-  function handleDeleteRule(ruleId: string) {
-    const rule = assignmentRules.find((r) => r.id === ruleId);
-    if (!rule) return;
-    setAssignmentRules((prev) => {
-      const remaining = prev.filter((r) => r.id !== ruleId);
-      const nonCatchAll = remaining.filter((r) => !r.isCatchAll);
-      return remaining.map((r) => (r.isCatchAll ? r : { ...r, priority: nonCatchAll.indexOf(r) + 1 }));
-    });
-    logAction("Deleted assignment rule", `Rule #${rule.priority}`, summarizeConditions(rule.conditions, rule.conditionLogic), "Deleted");
-    AppToaster.show({ icon: "trash", intent: "danger", message: `Deleted Rule #${rule.priority}.` });
-  }
-
-  function handleDuplicateRule(ruleId: string) {
-    const rule = assignmentRules.find((r) => r.id === ruleId);
-    if (!rule) return;
-    setAssignmentRules((prev) => {
-      const catchAll = prev.find((r) => r.isCatchAll);
-      const rest = prev.filter((r) => !r.isCatchAll);
-      const copy: AssignmentRule = {
-        ...rule,
-        id: `rule-${Date.now()}`,
-        priority: rest.length + 1,
-        lastModifiedBy: CURRENT_USER,
-        lastModifiedAt: new Date().toISOString(),
-      };
-      const next = [...rest, copy];
-      return catchAll ? [...next, catchAll] : next;
-    });
-    logAction("Duplicated assignment rule", `Rule #${rule.priority}`);
-  }
-
-  function handleToggleRuleStatus(ruleId: string) {
-    const rule = assignmentRules.find((r) => r.id === ruleId);
-    if (!rule) return;
-    const nextStatus = rule.status === "active" ? "inactive" : "active";
-    setAssignmentRules((prev) => prev.map((r) => (r.id === ruleId ? { ...r, status: nextStatus } : r)));
-    logAction(nextStatus === "active" ? "Activated assignment rule" : "Deactivated assignment rule", `Rule #${rule.priority}`, rule.status, nextStatus);
-  }
-
-  function handleAddScoringRule() {
-    const rule: ScoringRule = { id: `sr-${Date.now()}`, description: "New rule", points: 10, status: "active" };
-    setScoringRules((prev) => [...prev, rule]);
-    logAction("Added scoring rule", rule.description, undefined, `${rule.points >= 0 ? "+" : ""}${rule.points} pts`);
-  }
-
-  function handleSaveScoringRule(rule: ScoringRule) {
-    const existing = scoringRules.find((r) => r.id === rule.id);
-    setScoringRules((prev) => prev.map((r) => (r.id === rule.id ? rule : r)));
-    logAction(
-      "Edited scoring rule",
-      rule.description,
-      existing ? `${existing.description} (${existing.points >= 0 ? "+" : ""}${existing.points})` : undefined,
-      `${rule.description} (${rule.points >= 0 ? "+" : ""}${rule.points})`,
-    );
-  }
-
-  function handleDeleteScoringRule(ruleId: string) {
-    const rule = scoringRules.find((r) => r.id === ruleId);
-    if (!rule) return;
-    setScoringRules((prev) => prev.filter((r) => r.id !== ruleId));
-    logAction("Deleted scoring rule", rule.description, `${rule.points >= 0 ? "+" : ""}${rule.points} pts`, "Deleted");
-  }
-
-  function handleToggleScoringRuleStatus(ruleId: string) {
-    const rule = scoringRules.find((r) => r.id === ruleId);
-    if (!rule) return;
-    const nextStatus = rule.status === "active" ? "inactive" : "active";
-    setScoringRules((prev) => prev.map((r) => (r.id === ruleId ? { ...r, status: nextStatus } : r)));
-    logAction("Toggled scoring rule", rule.description, rule.status, nextStatus);
-  }
-
-  function handleCommitThresholds(next: TierThresholds) {
-    const before = `Hot ≥ ${tierThresholds.hotMin}, Warm ≥ ${tierThresholds.warmMin}`;
-    const after = `Hot ≥ ${next.hotMin}, Warm ≥ ${next.warmMin}`;
-    const retiered = leads.filter((l) => scoreToPriority(l.score, next) !== l.priority).length;
-    setTierThresholds(next);
-    setLeads((prev) => prev.map((l) => ({ ...l, priority: scoreToPriority(l.score, next) })));
-    logAction("Changed threshold", "Prioritization model", before, after);
-    AppToaster.show({
-      icon: "tick-circle",
-      intent: "success",
-      message:
-        retiered === 0
-          ? "Thresholds saved. No lead changed tier."
-          : `Thresholds saved — ${retiered} lead${retiered === 1 ? "" : "s"} moved tier. The Attention Center, SLA windows and routing now use the new cut-offs.`,
-    });
-  }
-
-  function handleReconnect(connectionId: string) {
-    setReconnectingId(connectionId);
-    setTimeout(() => {
-      setConnections((prev) =>
-        prev.map((c) => (c.id === connectionId ? { ...c, status: "healthy", lastSyncAt: new Date().toISOString(), pendingCount: 0 } : c)),
-      );
-      setReconnectingId(null);
-      const conn = connections.find((c) => c.id === connectionId);
-      logAction("Reconnected integration", conn?.name ?? connectionId, "Disconnected", "Healthy");
-      AppToaster.show({ icon: "tick-circle", intent: "success", message: `${conn?.name ?? "Connection"} reconnected.` });
-    }, 1400);
   }
 
   function handleResolveConflict(connectionId: string, conflictId: string, resolution: ConflictResolution) {
@@ -843,7 +554,7 @@ export function App() {
     AppToaster.show({
       icon: "tick-circle",
       intent: "success",
-      message: `Resolved ${conflict.field} conflict for ${conflict.leadName}. Writeback resumed — the lead clears from the Attention Center once it syncs.`,
+      message: `Resolved ${conflict.field} conflict for ${conflict.leadName}. CRM sync resumed — the lead clears from the Attention Center once it syncs.`,
     });
   }
 
@@ -869,6 +580,28 @@ export function App() {
     setSelectedLeadId(leadId);
     setView("lead-full");
   }
+
+  const leadDetailProps = {
+    lead: selectedLead,
+    leads,
+    assigneeOptions: ASSIGNEES,
+    scoringRules,
+    conflict: selectedLeadConflict,
+    onClose: () => setSelectedLeadId(null),
+    onAssign: handleAssign,
+    onRetrySync: handleRetrySync,
+    onLogOutcome: handleLogOutcome,
+    onCorrectMatch: handleCorrectMatch,
+    onResolveAmbiguous: handleResolveAmbiguous,
+    onResolveConflict: handleResolveConflict,
+    onOpenFullView: handleOpenFullView,
+    onSuggestedAction: handleSuggestedAction,
+    recommendation: selectedRecommendation,
+    onAcceptRecommendation: handleAcceptRecommendation,
+    onOverrideRecommendation: handleOverrideRecommendation,
+    onLeadAction: handleLeadAction,
+    onLogActivity: handleLogActivity,
+  };
 
   if (!authenticated) {
     return <LoginPage ssoAvailable={ssoAvailableForEmail} onLogin={handleLogin} />;
@@ -1046,7 +779,7 @@ export function App() {
 
       {view === "auto-processed-log" && (
         <main className="app-main">
-          <AutoProcessedLogPage entries={autoProcessedLog} onOpenLead={handleOpenLeadFromLog} onNavigate={navigateTo} initialSearch={autoLogSearchSeed} />
+          <AutoProcessedLogPage entries={autoProcessedLog} onOpenLead={setSelectedLeadId} onNavigate={navigateTo} initialSearch={autoLogSearchSeed} />
         </main>
       )}
 
@@ -1151,43 +884,12 @@ export function App() {
       )}
       {view === "lead-full" && (
         <main className="app-main">
-          <LeadDetailPanel
-            lead={selectedLead}
-            leads={leads}
-            assigneeOptions={ASSIGNEES}
-            scoringRules={scoringRules}
-            conflict={selectedLeadConflict}
-            onClose={() => setSelectedLeadId(null)}
-            onAssign={handleAssign}
-            onRetrySync={handleRetrySync}
-            onLogOutcome={handleLogOutcome}
-            onCorrectMatch={handleCorrectMatch}
-            onResolveAmbiguous={handleResolveAmbiguous}
-            onResolveConflict={handleResolveConflict}
-            onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction} onLogActivity={handleLogActivity}
-            asFullPage
-          />
+          <LeadDetailPanel {...leadDetailProps} asFullPage />
         </main>
       )}
       </div>
 
-      {view !== "lead-full" && (
-        <LeadDetailPanel
-          lead={selectedLead}
-          leads={leads}
-          assigneeOptions={ASSIGNEES}
-          scoringRules={scoringRules}
-          conflict={selectedLeadConflict}
-          onClose={() => setSelectedLeadId(null)}
-          onAssign={handleAssign}
-          onRetrySync={handleRetrySync}
-          onLogOutcome={handleLogOutcome}
-          onCorrectMatch={handleCorrectMatch}
-          onResolveAmbiguous={handleResolveAmbiguous}
-          onResolveConflict={handleResolveConflict}
-          onOpenFullView={handleOpenFullView} onSuggestedAction={handleSuggestedAction} recommendation={selectedRecommendation} onAcceptRecommendation={handleAcceptRecommendation} onOverrideRecommendation={handleOverrideRecommendation} onLeadAction={handleLeadAction} onLogActivity={handleLogActivity}
-        />
-      )}
+      {view !== "lead-full" && <LeadDetailPanel {...leadDetailProps} />}
     </div>
   );
 }

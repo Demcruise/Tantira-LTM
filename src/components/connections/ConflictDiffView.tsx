@@ -19,7 +19,7 @@ export function ConflictDiffView({ conflict, connectionName, onResolve, onOpenLe
 
       <p className="conflict-diff-view__provenance">
         <Icon icon="info-sign" size={11} />
-        {connectionName ?? "The CRM"} changed <strong>{conflict.field}</strong> after Tantira's last writeback — both sides now hold a different value, so the
+        {connectionName ?? "The CRM"} changed <strong>{conflict.field}</strong> after Tantira's last sync — both sides now hold a different value, so the
         sync is paused for this lead until you pick one.
       </p>
 
@@ -35,10 +35,10 @@ export function ConflictDiffView({ conflict, connectionName, onResolve, onOpenLe
       </div>
 
       <div className="conflict-diff-view__actions">
-        <Tooltip content="Tantira adopts the CRM value, then writeback resumes.">
+        <Tooltip content="Tantira adopts the CRM value, then the sync resumes.">
           <Button small text="Keep CRM" onClick={() => onResolve("keep_crm")} />
         </Tooltip>
-        <Tooltip content="Tantira's value is written back over the CRM, then sync resumes.">
+        <Tooltip content="Tantira's value overwrites the CRM, then sync resumes.">
           <Button small text="Keep Tantira" onClick={() => onResolve("keep_tantira")} />
         </Tooltip>
         <Tooltip content="CRM value wins the field; Tantira's value is kept as a note on the lead.">

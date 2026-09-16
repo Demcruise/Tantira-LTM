@@ -52,7 +52,7 @@ export function BulkActionBar({ count, assigneeOptions, onAction, onClear }: Bul
       <div className="bulk-bar__group">
         <Button small icon="moon" text="Snooze 1d" onClick={() => onAction({ type: "snooze" })} />
         <Button small icon="send-to" text="Nurture" onClick={() => onAction({ type: "nurture" })} />
-        <Button small icon="refresh" text="Reprocess" title="Re-run enrichment, re-tier against current thresholds and retry pending writebacks" onClick={() => onAction({ type: "reprocess" })} />
+        <Button small icon="refresh" text="Reprocess" title="Re-run enrichment, re-tier against current thresholds and retry pending CRM syncs" onClick={() => onAction({ type: "reprocess" })} />
         <Button small minimal icon="export" text="Export CSV" onClick={() => onAction({ type: "export" })} />
       </div>
     </div>
